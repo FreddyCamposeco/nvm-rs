@@ -1,0 +1,39 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Rust source files
+*.rs text diff=rust
+
+# YAML files
+*.yaml text
+*.yml text
+
+# Markdown files
+*.md text diff=markdown
+
+# Configuration files
+*.toml text
+*.json text
+
+# Scripts
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary files
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.a binary
+*.o binary
+
+# Archives
+*.zip binary
+*.tar binary
+*.gz binary
+*.7z binary
+
+# Lock files (generated)
+Cargo.lock linguist-generated=true
