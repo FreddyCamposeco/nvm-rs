@@ -24,6 +24,9 @@ test-nvm/
 *.tmp
 *.temp
 
+# Release directory (binaries are published via GitHub Releases)
+/release/
+
 # Reference directories (not part of the project)
 _nvm-windows/
 _old/

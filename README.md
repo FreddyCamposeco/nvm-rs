@@ -2,9 +2,12 @@
 
 Node Version Manager implementado en Rust - Multiplataforma (Windows, Linux, macOS)
 
+[![Version](https://img.shields.io/github/v/release/FreddyCamposeco/nvm-rs?label=version)](https://github.com/FreddyCamposeco/nvm-rs/releases/latest)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-28%20passing-brightgreen.svg)]()
+[![Downloads](https://img.shields.io/github/downloads/FreddyCamposeco/nvm-rs/total)](https://github.com/FreddyCamposeco/nvm-rs/releases)
+[![Stars](https://img.shields.io/github/stars/FreddyCamposeco/nvm-rs?style=social)](https://github.com/FreddyCamposeco/nvm-rs)
 
 ## 🚀 Estado del Proyecto
 
@@ -46,22 +49,39 @@ Node Version Manager implementado en Rust - Multiplataforma (Windows, Linux, mac
 
 ## 📦 Instalación
 
-### Desde Binarios Pre-compilados
+### Opción 1: Descarga Directa (Recomendado)
 
-```bash
-# Descargar desde GitHub Releases
-# https://github.com/FreddyCamposeco/nvm-rs/releases
+**Windows (x64)**
 
-# Windows
-# Descargar nvm-windows-x64.exe
+```powershell
+# 1. Descargar el binario
+# Ir a: https://github.com/FreddyCamposeco/nvm-rs/releases/latest
+# Descargar: nvm-v0.1.0-windows-x64.exe
 
-# Linux/macOS
-# Descargar nvm-linux-x64 o nvm-macos-x64
-chmod +x nvm-*
-sudo mv nvm-* /usr/local/bin/nvm
+# 2. Verificar checksum (opcional pero recomendado)
+Get-FileHash -Path "nvm-v0.1.0-windows-x64.exe" -Algorithm SHA256
+
+# 3. Renombrar y mover
+Rename-Item "nvm-v0.1.0-windows-x64.exe" "nvm.exe"
+Move-Item "nvm.exe" "C:\Program Files\nvm\"
+
+# 4. Agregar a PATH si no está
+$env:PATH += ";C:\Program Files\nvm"
+
+# 5. Verificar instalación
+nvm --version
 ```
 
-### Compilar desde el Código Fuente
+**Versión con Auto-Update**
+
+Si prefieres tener la capacidad de auto-actualización:
+
+```powershell
+# Descargar: nvm-v0.1.0-windows-x64-self-update.exe
+# Seguir los mismos pasos anteriores
+```
+
+### Opción 2: Compilar desde Código Fuente
 
 ```bash
 # Clonar el repositorio
