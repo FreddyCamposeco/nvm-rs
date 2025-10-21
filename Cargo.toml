@@ -2,12 +2,78 @@
 name = "nvm"
 version = "0.1.0"
 edition = "2021"
-
-[dependencies]
-anyhow = "1.0"
-lazy_static = "1.4"
-yaml-rust2 = "0.8"
+authors = ["Freddy Camposeco <your@email.com>"]
+description = "Node Version Manager - Multiplataforma en Rust"
+license = "MIT"
+repository = "https://github.com/FreddyCamposeco/nvm-rs"
+keywords = ["nvm", "node", "nodejs", "version-manager"]
+categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
 name = "nvm"
 path = "src/main.rs"
+
+[dependencies]
+# CLI & Argumentos
+clap = { version = "4.5", features = ["derive", "cargo"] }
+
+# Error Handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Async Runtime & HTTP
+tokio = { version = "1.35", features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "stream", "blocking"] }
+
+# Serialización
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Progress & UI
+indicatif = "0.17"
+console = "0.15"
+colored = "2.1"
+
+# Filesystem
+home = "0.5"
+directories = "5.0"
+
+# Archivos comprimidos
+zip = "0.6"
+flate2 = "1.0"
+tar = "0.4"
+
+# Cryptography
+sha2 = "0.10"
+
+# Internacionalización (de _old)
+lazy_static = "1.4"
+yaml-rust2 = "0.8"
+
+# Terminal utilities
+atty = "0.2"
+
+# Auto-update (para self-update)
+self_update = { version = "0.39", optional = true }
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["fileapi", "handleapi", "winnt", "winbase"] }
+junction = "1.1"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[features]
+default = []
+self-update = ["self_update"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[dev-dependencies]
+tempfile = "3.8"
+assert_cmd = "2.0"
+predicates = "3.0"

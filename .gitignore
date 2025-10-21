@@ -1,6 +1,29 @@
-/target
+# Ignore build artifacts
+/target/
 Cargo.lock
-*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
 Thumbs.db
+
+# NVM local data (for testing)
+.nvm/
+test-nvm/
+
+# Logs
+*.log
+
+# Test artifacts
+*.tmp
+*.temp
+
+# Reference directories (not part of the project)
 _nvm-windows/
+_old/

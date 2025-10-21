@@ -1,24 +1,102 @@
-use std::env;
+use anyhow::Result;
 use std::path::PathBuf;
 
+#[derive(Debug, Clone)]
 pub struct Config {
     pub nvm_dir: PathBuf,
+    #[allow(dead_code)] // Will be used in Phase 3 (install)
+    pub node_mirror: String,
+    #[allow(dead_code)] // Will be used in Phase 3 (install)
+    pub arch: String,
+    pub cache_duration_minutes: u64,
+    #[allow(dead_code)] // Will be used in Phase 5 (list installed)
+    pub installed_cache_duration_minutes: u64,
 }
 
 impl Config {
-    pub fn new() -> anyhow::Result<Self> {
-        let home_dir = env::var("USERPROFILE")
-            .or_else(|_| env::var("HOME"))
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| PathBuf::from("."));
+    pub fn new() -> Result<Self> {
+        let nvm_dir = Self::get_nvm_dir()?;
 
-        let nvm_dir = env::var("NVM_DIR")
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| home_dir.join(".nvm"));
+        // Ensure NVM directory exists
+        if !nvm_dir.exists() {
+            std::fs::create_dir_all(&nvm_dir)?;
+        }
 
-        // Ensure the directory exists
-        std::fs::create_dir_all(&nvm_dir)?;
+        let arch = Self::detect_arch();
 
-        Ok(Config { nvm_dir })
+        Ok(Config {
+            nvm_dir,
+            node_mirror: std::env::var("NODE_MIRROR")
+                .unwrap_or_else(|_| "https://nodejs.org/dist".to_string()),
+            arch,
+            cache_duration_minutes: 15,
+            installed_cache_duration_minutes: 5,
+        })
+    }
+
+    fn get_nvm_dir() -> Result<PathBuf> {
+        // Check NVM_DIR environment variable first
+        if let Ok(nvm_dir) = std::env::var("NVM_DIR") {
+            return Ok(PathBuf::from(nvm_dir));
+        }
+
+        // Use platform-specific default
+        let home_dir = home::home_dir()
+            .ok_or_else(|| anyhow::anyhow!("Could not determine home directory"))?;
+
+        Ok(home_dir.join(".nvm"))
+    }
+
+    fn detect_arch() -> String {
+        #[cfg(target_arch = "x86_64")]
+        return "x64".to_string();
+
+        #[cfg(target_arch = "aarch64")]
+        return "arm64".to_string();
+
+        #[cfg(target_arch = "x86")]
+        return "x86".to_string();
+
+        #[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64", target_arch = "x86")))]
+        return "unknown".to_string();
+    }
+
+    pub fn versions_dir(&self) -> PathBuf {
+        self.nvm_dir.clone()
+    }
+
+    #[allow(dead_code)] // Will be used in Phase 4 (use command)
+    pub fn current_dir(&self) -> PathBuf {
+        self.nvm_dir.join("current")
+    }
+
+    #[allow(dead_code)] // Will be used in Phase 6 (alias command)
+    pub fn alias_dir(&self) -> PathBuf {
+        self.nvm_dir.join("alias")
+    }
+
+    pub fn cache_file(&self) -> PathBuf {
+        self.nvm_dir.join(".version_cache.json")
+    }
+
+    #[allow(dead_code)] // Will be used in Phase 5 (list installed)
+    pub fn installed_cache_file(&self) -> PathBuf {
+        self.nvm_dir.join(".installed_cache.json")
+    }
+
+    #[allow(dead_code)] // Will be used in Phase 4 (use command)
+    pub fn active_version_file(&self) -> PathBuf {
+        self.nvm_dir.join(".active_version")
+    }
+
+    #[allow(dead_code)] // Will be used in Phase 3 (install command)
+    pub fn temp_dir(&self) -> PathBuf {
+        self.nvm_dir.join("temp")
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self::new().expect("Failed to create default config")
     }
 }
