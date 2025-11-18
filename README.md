@@ -49,7 +49,62 @@ Node Version Manager implementado en Rust - Multiplataforma (Windows, Linux, mac
 
 ## 📦 Instalación
 
-### Opción 1: Descarga Directa (Recomendado)
+### Opción 1: Script de Instalación Automática (Recomendado)
+
+**Windows (PowerShell)**
+
+```powershell
+# Instalación con un solo comando
+iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.ps1 | iex
+
+# O con opciones personalizadas
+$env:NVM_VERSION="v0.1.0"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.ps1 | iex
+```
+
+**Linux / macOS (Bash)**
+
+```bash
+# Instalación con un solo comando
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.sh | bash
+
+# O con opciones personalizadas
+export NVM_VERSION="v0.1.0"
+export NVM_INSTALL_DIR="$HOME/.nvm"
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.sh | bash
+```
+
+El script automáticamente:
+- ✅ Detecta tu sistema operativo y arquitectura
+- ✅ Descarga la versión correcta desde GitHub Releases
+- ✅ Verifica la integridad con checksums SHA256
+- ✅ Instala el binario en la ubicación apropiada
+- ✅ Te ayuda a configurar el PATH
+
+### Opción 2: Usando los Comandos de nvm
+
+Si ya tienes una versión de nvm instalada, puedes actualizarla o instalar desde dentro:
+
+```bash
+# Instalar última versión
+nvm install-self
+
+# Instalar versión específica
+nvm install-self --version v0.2.0
+
+# Instalar con capacidad de auto-actualización
+nvm install-self --with-self-update
+
+# Instalar en directorio personalizado
+nvm install-self --dir /usr/local/bin
+
+# Actualizar a la última versión
+nvm update-self
+
+# Desinstalar nvm
+nvm uninstall-self
+```
+
+### Opción 3: Descarga Directa Manual
 
 **Windows (x64)**
 
@@ -72,16 +127,27 @@ $env:PATH += ";C:\Program Files\nvm"
 nvm --version
 ```
 
-**Versión con Auto-Update**
+**Linux / macOS**
 
-Si prefieres tener la capacidad de auto-actualización:
+```bash
+# 1. Descargar el binario (ajusta según tu plataforma)
+wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.1.0-linux-x64
 
-```powershell
-# Descargar: nvm-v0.1.0-windows-x64-self-update.exe
-# Seguir los mismos pasos anteriores
+# 2. Verificar checksum (opcional)
+sha256sum nvm-v0.1.0-linux-x64
+
+# 3. Instalar
+chmod +x nvm-v0.1.0-linux-x64
+mv nvm-v0.1.0-linux-x64 ~/.local/bin/nvm
+
+# 4. Agregar a PATH en ~/.bashrc o ~/.zshrc
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+
+# 5. Verificar instalación
+nvm --version
 ```
 
-### Opción 2: Compilar desde Código Fuente
+### Opción 4: Compilar desde Código Fuente
 
 ```bash
 # Clonar el repositorio
@@ -169,7 +235,24 @@ nvm cleanup --yes
 nvm doctor
 ```
 
-### Auto-Actualización
+### Gestión de nvm
+
+```bash
+# Instalar/actualizar nvm desde GitHub
+nvm install-self              # Instalar última versión
+nvm install-self -v v0.2.0    # Instalar versión específica
+nvm install-self --with-self-update  # Con capacidad de auto-actualización
+
+# Actualizar nvm a la última versión
+nvm update-self
+nvm update-self -v v0.2.0     # Actualizar a versión específica
+
+# Desinstalar nvm del sistema
+nvm uninstall-self
+nvm uninstall-self --yes      # Sin confirmación
+```
+
+### Auto-Actualización (Feature Opcional)
 
 ```bash
 # Actualizar nvm (solo si se compiló con --features self-update)
@@ -300,7 +383,10 @@ cargo doc --open
 | `nvm aliases` | Listar aliases |
 | `nvm cleanup [--yes]` | Limpiar versiones antiguas |
 | `nvm doctor` | Diagnóstico del sistema |
-| `nvm self-update` | Actualizar nvm (opcional) |
+| `nvm install-self` | Instalar/reinstalar nvm desde GitHub |
+| `nvm update-self` | Actualizar nvm a la última versión |
+| `nvm uninstall-self` | Desinstalar nvm del sistema |
+| `nvm self-update` | Actualizar nvm (opcional, requiere feature) |
 | `nvm lang <locale>` | Cambiar idioma |
 
 ## 🤝 Contribuir

@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use std::env;
+use std::path::PathBuf;
 
 mod config;
 mod core;
@@ -96,6 +97,39 @@ enum Commands {
     Lang {
         /// Locale code (en, es)
         locale: String,
+    },
+
+    /// Install nvm from GitHub releases
+    InstallSelf {
+        /// Version to install (e.g., v0.1.0, latest)
+        #[arg(short, long)]
+        version: Option<String>,
+        /// Install directory (default: auto-detect)
+        #[arg(short, long)]
+        dir: Option<PathBuf>,
+        /// Include self-update capability
+        #[arg(long)]
+        with_self_update: bool,
+    },
+
+    /// Uninstall nvm from the system
+    UninstallSelf {
+        /// Installation directory (default: auto-detect)
+        #[arg(short, long)]
+        dir: Option<PathBuf>,
+        /// Skip confirmation
+        #[arg(short, long)]
+        yes: bool,
+    },
+
+    /// Update nvm to the latest version
+    UpdateSelf {
+        /// Target version (default: latest)
+        #[arg(short, long)]
+        version: Option<String>,
+        /// Include self-update capability
+        #[arg(long)]
+        with_self_update: bool,
     },
 }
 
@@ -635,6 +669,238 @@ async fn main() -> Result<()> {
             } else {
                 println!("{}", t!("unsupported_locale", &locale));
             }
+        }
+
+        Commands::InstallSelf { version, dir, with_self_update } => {
+            use core::installer::*;
+            
+            println!("{}", t!("install_self_start"));
+            
+            // Determinar versión a instalar
+            let release = if let Some(ver) = version {
+                if ver == "latest" {
+                    get_latest_release().await?
+                } else {
+                    get_release_by_tag(&ver).await?
+                }
+            } else {
+                get_latest_release().await?
+            };
+            
+            println!("{}", t!("install_self_version")
+                .replace("{version}", &release.tag_name));
+            
+            // Determinar asset apropiado
+            let asset_name = get_platform_asset_name(&release.tag_name, with_self_update);
+            let asset = release.assets.iter()
+                .find(|a| a.name == asset_name)
+                .ok_or_else(|| anyhow::anyhow!(
+                    "{}", t!("install_self_no_asset")
+                        .replace("{asset}", &asset_name)
+                ))?;
+            
+            // Crear directorio temporal
+            let temp_dir = std::env::temp_dir().join("nvm-install");
+            std::fs::create_dir_all(&temp_dir)?;
+            let download_path = temp_dir.join(&asset.name);
+            
+            // Descargar binario
+            println!("\n{}", t!("downloading"));
+            download_asset(asset, &download_path).await?;
+            
+            // Verificar checksum (si está disponible)
+            println!("{}", t!("install_self_verifying"));
+            let checksum = verify_checksum(&download_path, None).await?;
+            println!("SHA256: {}", checksum);
+            
+            // Determinar directorio de instalación
+            let install_dir = if let Some(d) = dir {
+                d
+            } else {
+                get_install_dir()?
+            };
+            
+            // Instalar binario
+            println!("\n{}", t!("install_self_installing"));
+            let installed_path = install_binary(&download_path, &install_dir)?;
+            
+            // Limpiar archivos temporales
+            let _ = std::fs::remove_dir_all(&temp_dir);
+            
+            println!("\n✓ {}", t!("install_self_complete")
+                .replace("{path}", &installed_path.display().to_string()));
+            
+            // Configurar variables de entorno
+            #[cfg(windows)]
+            {
+                use core::installer::{add_to_path, set_nvm_dir, is_in_path};
+                
+                println!("\n{}", t!("install_self_configuring_env"));
+                
+                // Configurar NVM_DIR
+                let nvm_data_dir = dirs::home_dir()
+                    .unwrap_or_else(|| PathBuf::from("."))
+                    .join(".nvm");
+                
+                if let Err(e) = set_nvm_dir(&nvm_data_dir) {
+                    println!("{}", t!("install_self_env_warning")
+                        .replace("{error}", &e.to_string()));
+                } else {
+                    println!("✓ {}", t!("install_self_nvm_dir_set")
+                        .replace("{path}", &nvm_data_dir.display().to_string()));
+                }
+                
+                // Agregar al PATH si no está
+                if !is_in_path(&install_dir) {
+                    if let Err(e) = add_to_path(&install_dir) {
+                        println!("{}", t!("install_self_path_warning")
+                            .replace("{error}", &e.to_string()));
+                        println!("\n{}", get_path_instructions(&install_dir));
+                    } else {
+                        println!("✓ {}", t!("install_self_path_set"));
+                        println!("\n{}", t!("install_self_restart_terminal"));
+                    }
+                } else {
+                    println!("✓ {}", t!("install_self_path_already_set"));
+                }
+            }
+            
+            // Verificar si está en PATH
+            #[cfg(not(windows))]
+            if !is_in_path(&install_dir) {
+                println!("\n⚠ {}", t!("install_self_not_in_path"));
+                println!("\n{}", get_path_instructions(&install_dir));
+            }
+        }
+
+        Commands::UninstallSelf { dir, yes } => {
+            use core::installer::*;
+            use std::io::{self, Write};
+            
+            println!("{}", t!("uninstall_self_start"));
+            
+            // Determinar directorio
+            let install_dir = if let Some(d) = dir {
+                d
+            } else {
+                get_install_dir()?
+            };
+            
+            #[cfg(windows)]
+            let exe_path = install_dir.join("nvm.exe");
+            #[cfg(not(windows))]
+            let exe_path = install_dir.join("nvm");
+            
+            if !exe_path.exists() {
+                println!("{}", t!("uninstall_self_not_found")
+                    .replace("{path}", &exe_path.display().to_string()));
+                return Ok(());
+            }
+            
+            // Confirmación
+            if !yes {
+                print!("\n{} ", t!("uninstall_self_confirm")
+                    .replace("{path}", &exe_path.display().to_string()));
+                io::stdout().flush()?;
+                
+                let mut input = String::new();
+                io::stdin().read_line(&mut input)?;
+                
+                let input = input.trim().to_lowercase();
+                if input != "y" && input != "yes" && input != "s" && input != "si" {
+                    println!("{}", t!("uninstall_self_cancelled"));
+                    return Ok(());
+                }
+            }
+            
+            // Desinstalar
+            uninstall_binary(Some(&install_dir))?;
+            
+            // Eliminar variables de entorno
+            #[cfg(windows)]
+            {
+                use core::installer::{remove_from_path, remove_nvm_dir};
+                
+                println!("\n{}", t!("uninstall_self_removing_env"));
+                
+                // Eliminar del PATH
+                if let Err(e) = remove_from_path(&install_dir) {
+                    println!("{}", t!("uninstall_self_env_warning")
+                        .replace("{error}", &e.to_string()));
+                } else {
+                    println!("✓ {}", t!("uninstall_self_path_removed"));
+                }
+                
+                // Eliminar NVM_DIR
+                if let Err(e) = remove_nvm_dir() {
+                    println!("{}", t!("uninstall_self_env_warning")
+                        .replace("{error}", &e.to_string()));
+                } else {
+                    println!("✓ {}", t!("uninstall_self_nvm_dir_removed"));
+                }
+            }
+            
+            println!("\n✓ {}", t!("uninstall_self_complete"));
+            println!("{}", t!("uninstall_self_note"));
+        }
+
+        Commands::UpdateSelf { version, with_self_update } => {
+            use core::installer::*;
+            
+            println!("{}", t!("update_self_start"));
+            
+            // Obtener ejecutable actual
+            let current_exe = get_current_executable()?;
+            let install_dir = current_exe.parent()
+                .ok_or_else(|| anyhow::anyhow!("Cannot determine installation directory"))?;
+            
+            // Determinar versión a instalar
+            let release = if let Some(ver) = version {
+                if ver == "latest" {
+                    get_latest_release().await?
+                } else {
+                    get_release_by_tag(&ver).await?
+                }
+            } else {
+                get_latest_release().await?
+            };
+            
+            println!("{}", t!("update_self_version")
+                .replace("{version}", &release.tag_name));
+            
+            // Determinar asset apropiado
+            let asset_name = get_platform_asset_name(&release.tag_name, with_self_update);
+            let asset = release.assets.iter()
+                .find(|a| a.name == asset_name)
+                .ok_or_else(|| anyhow::anyhow!(
+                    "{}", t!("install_self_no_asset")
+                        .replace("{asset}", &asset_name)
+                ))?;
+            
+            // Crear directorio temporal
+            let temp_dir = std::env::temp_dir().join("nvm-update");
+            std::fs::create_dir_all(&temp_dir)?;
+            let download_path = temp_dir.join(&asset.name);
+            
+            // Descargar binario
+            println!("\n{}", t!("downloading"));
+            download_asset(asset, &download_path).await?;
+            
+            // Verificar checksum
+            println!("{}", t!("install_self_verifying"));
+            let checksum = verify_checksum(&download_path, None).await?;
+            println!("SHA256: {}", checksum);
+            
+            // Actualizar binario
+            println!("\n{}", t!("update_self_installing"));
+            let _installed_path = install_binary(&download_path, install_dir)?;
+            
+            // Limpiar archivos temporales
+            let _ = std::fs::remove_dir_all(&temp_dir);
+            
+            println!("\n✓ {}", t!("update_self_complete")
+                .replace("{version}", &release.tag_name));
+            println!("\n{}", t!("restart_required"));
         }
     }
 

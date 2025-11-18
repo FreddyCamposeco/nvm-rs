@@ -53,11 +53,17 @@ yaml-rust2 = "0.8"
 # Terminal utilities
 atty = "0.2"
 
+# Async utilities
+futures-util = "0.3"
+
+# Directory handling
+dirs = "5.0"
+
 # Auto-update (para self-update)
 self_update = { version = "0.39", optional = true }
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["fileapi", "handleapi", "winnt", "winbase"] }
+winapi = { version = "0.3", features = ["fileapi", "handleapi", "winnt", "winbase", "winuser"] }
 junction = "1.1"
 
 [target.'cfg(unix)'.dependencies]
