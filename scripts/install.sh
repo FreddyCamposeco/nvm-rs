@@ -172,10 +172,14 @@ fi
 # Verificar PATH
 info ""
 info "Verificando configuración del PATH..."
-if echo "$PATH" | grep -q "$INSTALL_DIR"; then
-    success "✓ El directorio de instalación ya está en el PATH"
+CURRENT_BIN="$NVM_DATA_DIR/current/bin"
+PATH_CONFIGURED=false
+
+if echo "$PATH" | grep -q "$INSTALL_DIR" && echo "$PATH" | grep -q "$CURRENT_BIN"; then
+    success "✓ El directorio de instalación y versión activa ya están en el PATH"
+    PATH_CONFIGURED=true
 else
-    warning "⚠ El directorio de instalación NO está en el PATH"
+    warning "⚠ Falta configurar el PATH"
     
     # Ofrecer agregar automáticamente
     if [ -t 0 ]; then
@@ -183,19 +187,28 @@ else
         read -p "¿Desea agregar al PATH automáticamente? (s/N): " -r
         echo ""
         if [[ $REPLY =~ ^[SsYy]$ ]]; then
-            if grep -q "export PATH=.*$INSTALL_DIR" "$SHELL_RC" 2>/dev/null; then
-                info "PATH ya configurado en $SHELL_RC"
-            else
-                echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$SHELL_RC"
+            # Verificar si ya está configurado
+            NEEDS_UPDATE=false
+            if ! grep -q "export PATH=.*$INSTALL_DIR" "$SHELL_RC" 2>/dev/null; then
+                NEEDS_UPDATE=true
+            fi
+            if ! grep -q "export PATH=.*\$NVM_DIR/current/bin" "$SHELL_RC" 2>/dev/null; then
+                NEEDS_UPDATE=true
+            fi
+            
+            if [ "$NEEDS_UPDATE" = true ]; then
+                echo "export PATH=\"$INSTALL_DIR:\$NVM_DIR/current/bin:\$PATH\"" >> "$SHELL_RC"
                 success "✓ PATH actualizado en $SHELL_RC"
                 warning "⚠ Reinicie su terminal o ejecute: source $SHELL_RC"
+            else
+                info "PATH ya configurado en $SHELL_RC"
             fi
         else
             echo ""
             info "Para agregar al PATH manualmente:"
             info "Agregar al final de $SHELL_RC:"
             echo ""
-            echo "  export PATH=\"$INSTALL_DIR:\$PATH\""
+            echo "  export PATH=\"$INSTALL_DIR:\$NVM_DIR/current/bin:\$PATH\""
             echo ""
             info "Luego, recargar la configuración:"
             echo "  source $SHELL_RC"
@@ -205,7 +218,7 @@ else
         info "Para agregar al PATH:"
         info "Agregar al final de $SHELL_RC:"
         echo ""
-        echo "  export PATH=\"$INSTALL_DIR:\$PATH\""
+        echo "  export PATH=\"$INSTALL_DIR:\$NVM_DIR/current/bin:\$PATH\""
         echo ""
         info "Luego, recargar la configuración:"
         echo "  source $SHELL_RC"

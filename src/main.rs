@@ -292,7 +292,15 @@ async fn main() -> Result<()> {
             let current_link = config.current_dir();
             println!("{}", t!("creating_symlink"));
             
-            symlink::create_or_update_symlink(&version_dir, &current_link)
+            // En Windows, el symlink apunta a la raíz de la versión
+            // En Unix, debe apuntar a la subcarpeta bin/
+            #[cfg(windows)]
+            let symlink_target = &version_dir;
+            
+            #[cfg(not(windows))]
+            let symlink_target = version_dir.join("bin");
+            
+            symlink::create_or_update_symlink(&symlink_target, &current_link)
                 .context("Failed to create symlink")?;
             
             println!("\n✓ {}", t!("now_using_node").replace("{}", &resolved_version));
@@ -750,7 +758,7 @@ async fn main() -> Result<()> {
                         .replace("{path}", &nvm_data_dir.display().to_string()));
                 }
                 
-                // Agregar al PATH si no está
+                // Agregar nvm/bin al PATH si no está
                 if !is_in_path(&install_dir) {
                     if let Err(e) = add_to_path(&install_dir) {
                         println!("{}", t!("install_self_path_warning")
@@ -758,11 +766,25 @@ async fn main() -> Result<()> {
                         println!("\n{}", get_path_instructions(&install_dir));
                     } else {
                         println!("✓ {}", t!("install_self_path_set"));
-                        println!("\n{}", t!("install_self_restart_terminal"));
                     }
                 } else {
                     println!("✓ {}", t!("install_self_path_already_set"));
                 }
+                
+                // Agregar nvm/current/bin al PATH para la versión activa
+                let current_dir = nvm_data_dir.join("current").join("bin");
+                if !is_in_path(&current_dir) {
+                    if let Err(e) = add_to_path(&current_dir) {
+                        println!("{}", t!("install_self_path_warning")
+                            .replace("{error}", &e.to_string()));
+                    } else {
+                        println!("✓ PATH configurado para versión activa ({})", current_dir.display());
+                    }
+                } else {
+                    println!("✓ PATH de versión activa ya configurado");
+                }
+                
+                println!("\n{}", t!("install_self_restart_terminal"));
             }
             
             // Verificar si está en PATH
@@ -823,10 +845,22 @@ async fn main() -> Result<()> {
                 
                 println!("\n{}", t!("uninstall_self_removing_env"));
                 
-                // Eliminar del PATH
+                // Eliminar del PATH (tanto bin como current/bin)
+                let nvm_data_dir = dirs::home_dir()
+                    .unwrap_or_else(|| PathBuf::from("."))
+                    .join(".nvm");
+                let current_dir = nvm_data_dir.join("current").join("bin");
+                
                 if let Err(e) = remove_from_path(&install_dir) {
                     println!("{}", t!("uninstall_self_env_warning")
                         .replace("{error}", &e.to_string()));
+                } else {
+                    println!("✓ {}", t!("uninstall_self_path_removed"));
+                }
+                
+                // Remover current del PATH
+                if let Err(e) = remove_from_path(&current_dir) {
+                    println!("⚠ No se pudo remover {} del PATH: {}", current_dir.display(), e);
                 } else {
                     println!("✓ {}", t!("uninstall_self_path_removed"));
                 }
