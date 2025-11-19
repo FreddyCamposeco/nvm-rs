@@ -149,20 +149,35 @@ Write-Info "Verificando configuración del PATH..."
 $currentUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
 $pathEntries = $currentUserPath -split ';'
 $isInPath = $pathEntries -contains $InstallDir
+$nvmCurrentDir = "$env:USERPROFILE\.nvm\current"
+$isCurrentInPath = $pathEntries -contains $nvmCurrentDir
 
-if ($isInPath) {
-    Write-Success "✓ El directorio de instalación ya está en el PATH"
+if ($isInPath -and $isCurrentInPath) {
+    Write-Success "✓ El directorio de instalación y versión activa ya están en el PATH"
 } else {
-    Write-Warning "⚠ El directorio de instalación NO está en el PATH"
+    Write-Warning "⚠ Falta configurar el PATH"
     
     if (-not $NoPrompt) {
         Write-Info ""
         $response = Read-Host "¿Desea agregar al PATH del usuario actual? (S/N)"
         if ($response -eq 'S' -or $response -eq 's' -or $response -eq 'Y' -or $response -eq 'y') {
             try {
-                $newPath = if ($currentUserPath) { "$currentUserPath;$InstallDir" } else { $InstallDir }
+                $newPath = $currentUserPath
+                
+                # Agregar InstallDir si no está
+                if (-not $isInPath) {
+                    $newPath = if ($newPath) { "$newPath;$InstallDir" } else { $InstallDir }
+                    Write-Success "✓ Agregado al PATH: $InstallDir"
+                }
+                
+                # Agregar current dir si no está
+                if (-not $isCurrentInPath) {
+                    $newPath = if ($newPath) { "$newPath;$nvmCurrentDir" } else { $nvmCurrentDir }
+                    Write-Success "✓ Agregado al PATH: $nvmCurrentDir"
+                }
+                
                 [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
-                $env:PATH = "$env:PATH;$InstallDir"
+                $env:PATH = "$env:PATH;$InstallDir;$nvmCurrentDir"
                 Write-Success "✓ PATH actualizado correctamente"
                 Write-Info "⚠ Es posible que necesite reiniciar su terminal para ver los cambios"
             } catch {
@@ -172,6 +187,7 @@ if ($isInPath) {
                 Write-Info "1. Buscar 'Variables de entorno' en el menú Inicio"
                 Write-Info "2. Editar la variable PATH del usuario"
                 Write-Info "3. Agregar: $InstallDir"
+                Write-Info "4. Agregar: $nvmCurrentDir"
             }
         }
     } else {
