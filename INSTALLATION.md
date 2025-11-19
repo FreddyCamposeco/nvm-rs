@@ -12,20 +12,20 @@ El método más sencillo es usar los scripts de instalación automática.
 
 ```powershell
 # Instalación básica
-iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
 
 # Instalación con opciones
 $env:NVM_VERSION="v0.1.0"                      # Versión específica (opcional)
 $env:NVM_INSTALL_DIR="C:\nvm"                  # Directorio personalizado (opcional)
 $env:NVM_WITH_SELF_UPDATE="true"               # Con capacidad de auto-actualización (opcional)
-iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
 ```
 
 #### Linux / macOS (Bash)
 
 ```bash
 # Instalación básica
-curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.sh | bash
 
 # Instalación con opciones
 export NVM_VERSION="v0.1.0"                     # Versión específica (opcional)
@@ -182,12 +182,12 @@ Simplemente ejecuta el script de instalación nuevamente, automáticamente hará
 
 ```powershell
 # Windows
-iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
 ```
 
 ```bash
 # Linux/macOS
-curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.sh | bash
 ```
 
 ## 🗑️ Desinstalación

@@ -67,7 +67,7 @@ impl Config {
 
     #[allow(dead_code)] // Will be used in Phase 4 (use command)
     pub fn current_dir(&self) -> PathBuf {
-        self.nvm_dir.join("current")
+        self.nvm_dir.join("current").join("bin")
     }
 
     #[allow(dead_code)] // Will be used in Phase 6 (alias command)

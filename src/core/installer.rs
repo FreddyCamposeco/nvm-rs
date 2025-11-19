@@ -1,12 +1,12 @@
 use anyhow::{Context, Result};
+use indicatif::{ProgressBar, ProgressStyle};
 use reqwest;
 use serde::Deserialize;
+use sha2::{Digest, Sha256};
 use std::env;
 use std::fs;
-use std::path::{Path, PathBuf};
-use indicatif::{ProgressBar, ProgressStyle};
-use sha2::{Sha256, Digest};
 use std::io::Write;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
@@ -46,7 +46,9 @@ pub async fn get_latest_release() -> Result<GithubRelease> {
         anyhow::bail!("Failed to get latest release: {}", response.status());
     }
 
-    let release: GithubRelease = response.json().await
+    let release: GithubRelease = response
+        .json()
+        .await
         .context("Failed to parse release information")?;
 
     Ok(release)
@@ -71,7 +73,9 @@ pub async fn get_release_by_tag(tag: &str) -> Result<GithubRelease> {
         anyhow::bail!("Release {} not found", tag);
     }
 
-    let release: GithubRelease = response.json().await
+    let release: GithubRelease = response
+        .json()
+        .await
         .context("Failed to parse release information")?;
 
     Ok(release)
@@ -82,11 +86,7 @@ pub fn get_platform_asset_name(version: &str, with_self_update: bool) -> String 
     let os = env::consts::OS;
     let arch = env::consts::ARCH;
 
-    let suffix = if with_self_update {
-        "-self-update"
-    } else {
-        ""
-    };
+    let suffix = if with_self_update { "-self-update" } else { "" };
 
     match (os, arch) {
         ("windows", "x86_64") => format!("nvm-{}-windows-x64{}.exe", version, suffix),
@@ -124,8 +124,7 @@ pub async fn download_asset(asset: &GithubAsset, dest_path: &Path) -> Result<()>
     );
 
     // Descargar con progreso
-    let mut file = fs::File::create(dest_path)
-        .context("Failed to create destination file")?;
+    let mut file = fs::File::create(dest_path).context("Failed to create destination file")?;
     let mut downloaded: u64 = 0;
     let mut stream = response.bytes_stream();
 
@@ -143,8 +142,8 @@ pub async fn download_asset(asset: &GithubAsset, dest_path: &Path) -> Result<()>
 
 /// Verifica el checksum SHA256 de un archivo
 pub async fn verify_checksum(file_path: &Path, expected_checksum: Option<&str>) -> Result<String> {
-    let mut file = fs::File::open(file_path)
-        .context("Failed to open file for checksum verification")?;
+    let mut file =
+        fs::File::open(file_path).context("Failed to open file for checksum verification")?;
     let mut hasher = Sha256::new();
     std::io::copy(&mut file, &mut hasher)?;
     let hash = hasher.finalize();
@@ -172,12 +171,12 @@ pub fn get_current_executable() -> Result<PathBuf> {
 pub fn get_install_dir() -> Result<PathBuf> {
     #[cfg(windows)]
     {
-        // En Windows, instalar en %LOCALAPPDATA%\Programs\nvm o C:\Program Files\nvm
-        if let Ok(local_app_data) = env::var("LOCALAPPDATA") {
-            let path = PathBuf::from(local_app_data).join("Programs").join("nvm");
+        // En Windows, instalar en %USERPROFILE%\.nvm\bin
+        if let Some(home) = dirs::home_dir() {
+            let path = home.join(".nvm").join("bin");
             return Ok(path);
         }
-        Ok(PathBuf::from("C:\\Program Files\\nvm"))
+        Ok(PathBuf::from("C:\\nvm\\bin"))
     }
 
     #[cfg(not(windows))]
@@ -194,8 +193,7 @@ pub fn get_install_dir() -> Result<PathBuf> {
 /// Instala el binario descargado en el sistema
 pub fn install_binary(source: &Path, install_dir: &Path) -> Result<PathBuf> {
     // Crear directorio de instalación si no existe
-    fs::create_dir_all(install_dir)
-        .context("Failed to create installation directory")?;
+    fs::create_dir_all(install_dir).context("Failed to create installation directory")?;
 
     // Determinar nombre del ejecutable
     #[cfg(windows)]
@@ -208,13 +206,11 @@ pub fn install_binary(source: &Path, install_dir: &Path) -> Result<PathBuf> {
     // Si el archivo destino existe, hacer backup
     if dest_path.exists() {
         let backup_path = dest_path.with_extension("exe.bak");
-        fs::rename(&dest_path, &backup_path)
-            .context("Failed to backup existing binary")?;
+        fs::rename(&dest_path, &backup_path).context("Failed to backup existing binary")?;
     }
 
     // Copiar el nuevo binario
-    fs::copy(source, &dest_path)
-        .context("Failed to copy binary to installation directory")?;
+    fs::copy(source, &dest_path).context("Failed to copy binary to installation directory")?;
 
     // En Unix, hacer ejecutable
     #[cfg(unix)]
@@ -248,8 +244,7 @@ pub fn uninstall_binary(install_dir: Option<&Path>) -> Result<()> {
     }
 
     // Eliminar el binario
-    fs::remove_file(&exe_path)
-        .context("Failed to remove nvm binary")?;
+    fs::remove_file(&exe_path).context("Failed to remove nvm binary")?;
 
     // Eliminar backup si existe
     #[cfg(windows)]
@@ -299,11 +294,18 @@ pub fn get_path_instructions(install_dir: &Path) -> String {
             "~/.bashrc"
         };
 
+        let nvm_dir = dirs::home_dir()
+            .unwrap_or_else(|| PathBuf::from("~"))
+            .join(".nvm");
+
         format!(
             r#"Para agregar nvm al PATH permanentemente:
-1. Agregar al final de {}: export PATH="{}:$PATH"
+1. Agregar al final de {}:
+   export NVM_DIR="{}"
+   export PATH="{}:$NVM_DIR/current/bin:$PATH"
 2. Recargar la configuración: source {}"#,
             shell_config,
+            nvm_dir.display(),
             install_dir.display(),
             shell_config
         )
@@ -313,48 +315,58 @@ pub fn get_path_instructions(install_dir: &Path) -> String {
 /// Agrega el directorio al PATH del usuario (permanente)
 #[cfg(windows)]
 pub fn add_to_path(install_dir: &Path) -> Result<()> {
-    use winapi::um::winuser::{SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE};
     use std::ptr;
-    
+    use winapi::um::winuser::{
+        SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE,
+    };
+
     // Obtener PATH actual del usuario
     let current_path = std::process::Command::new("powershell")
         .args(&[
             "-NoProfile",
             "-Command",
-            "[Environment]::GetEnvironmentVariable('Path', 'User')"
+            "[Environment]::GetEnvironmentVariable('Path', 'User')",
         ])
         .output()
         .context("Failed to get current PATH")?;
-    
-    let current_path_str = String::from_utf8_lossy(&current_path.stdout).trim().to_string();
+
+    let current_path_str = String::from_utf8_lossy(&current_path.stdout)
+        .trim()
+        .to_string();
     let install_dir_str = install_dir.to_string_lossy();
-    
+
     // Verificar si ya está en el PATH
-    if current_path_str.split(';').any(|p| p.trim() == install_dir_str.as_ref()) {
+    if current_path_str
+        .split(';')
+        .any(|p| p.trim() == install_dir_str.as_ref())
+    {
         return Ok(());
     }
-    
+
     // Agregar al PATH
     let new_path = if current_path_str.is_empty() {
         install_dir_str.to_string()
     } else {
         format!("{};{}", current_path_str, install_dir_str)
     };
-    
+
     // Establecer la nueva variable PATH
     let status = std::process::Command::new("powershell")
         .args(&[
             "-NoProfile",
             "-Command",
-            &format!("[Environment]::SetEnvironmentVariable('Path', '{}', 'User')", new_path)
+            &format!(
+                "[Environment]::SetEnvironmentVariable('Path', '{}', 'User')",
+                new_path
+            ),
         ])
         .status()
         .context("Failed to set PATH")?;
-    
+
     if !status.success() {
         anyhow::bail!("Failed to update PATH environment variable");
     }
-    
+
     // Notificar al sistema del cambio
     unsafe {
         let param = "Environment\0".encode_utf16().collect::<Vec<u16>>();
@@ -368,51 +380,58 @@ pub fn add_to_path(install_dir: &Path) -> Result<()> {
             ptr::null_mut(),
         );
     }
-    
+
     Ok(())
 }
 
 /// Elimina el directorio del PATH del usuario
 #[cfg(windows)]
 pub fn remove_from_path(install_dir: &Path) -> Result<()> {
-    use winapi::um::winuser::{SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE};
     use std::ptr;
-    
+    use winapi::um::winuser::{
+        SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE,
+    };
+
     // Obtener PATH actual del usuario
     let current_path = std::process::Command::new("powershell")
         .args(&[
             "-NoProfile",
             "-Command",
-            "[Environment]::GetEnvironmentVariable('Path', 'User')"
+            "[Environment]::GetEnvironmentVariable('Path', 'User')",
         ])
         .output()
         .context("Failed to get current PATH")?;
-    
-    let current_path_str = String::from_utf8_lossy(&current_path.stdout).trim().to_string();
+
+    let current_path_str = String::from_utf8_lossy(&current_path.stdout)
+        .trim()
+        .to_string();
     let install_dir_str = install_dir.to_string_lossy();
-    
+
     // Filtrar el directorio de instalación
     let new_path: Vec<&str> = current_path_str
         .split(';')
         .filter(|p| p.trim() != install_dir_str.as_ref())
         .collect();
-    
+
     let new_path = new_path.join(";");
-    
+
     // Establecer la nueva variable PATH
     let status = std::process::Command::new("powershell")
         .args(&[
             "-NoProfile",
             "-Command",
-            &format!("[Environment]::SetEnvironmentVariable('Path', '{}', 'User')", new_path)
+            &format!(
+                "[Environment]::SetEnvironmentVariable('Path', '{}', 'User')",
+                new_path
+            ),
         ])
         .status()
         .context("Failed to set PATH")?;
-    
+
     if !status.success() {
         anyhow::bail!("Failed to update PATH environment variable");
     }
-    
+
     // Notificar al sistema del cambio
     unsafe {
         let param = "Environment\0".encode_utf16().collect::<Vec<u16>>();
@@ -426,32 +445,37 @@ pub fn remove_from_path(install_dir: &Path) -> Result<()> {
             ptr::null_mut(),
         );
     }
-    
+
     Ok(())
 }
 
 /// Establece la variable de entorno NVM_DIR
 #[cfg(windows)]
 pub fn set_nvm_dir(nvm_dir: &Path) -> Result<()> {
-    use winapi::um::winuser::{SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE};
     use std::ptr;
-    
+    use winapi::um::winuser::{
+        SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE,
+    };
+
     let nvm_dir_str = nvm_dir.to_string_lossy();
-    
+
     // Establecer NVM_DIR
     let status = std::process::Command::new("powershell")
         .args(&[
             "-NoProfile",
             "-Command",
-            &format!("[Environment]::SetEnvironmentVariable('NVM_DIR', '{}', 'User')", nvm_dir_str)
+            &format!(
+                "[Environment]::SetEnvironmentVariable('NVM_DIR', '{}', 'User')",
+                nvm_dir_str
+            ),
         ])
         .status()
         .context("Failed to set NVM_DIR")?;
-    
+
     if !status.success() {
         anyhow::bail!("Failed to set NVM_DIR environment variable");
     }
-    
+
     // Notificar al sistema del cambio
     unsafe {
         let param = "Environment\0".encode_utf16().collect::<Vec<u16>>();
@@ -465,30 +489,32 @@ pub fn set_nvm_dir(nvm_dir: &Path) -> Result<()> {
             ptr::null_mut(),
         );
     }
-    
+
     Ok(())
 }
 
 /// Elimina la variable de entorno NVM_DIR
 #[cfg(windows)]
 pub fn remove_nvm_dir() -> Result<()> {
-    use winapi::um::winuser::{SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE};
     use std::ptr;
-    
+    use winapi::um::winuser::{
+        SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE,
+    };
+
     // Eliminar NVM_DIR
     let status = std::process::Command::new("powershell")
         .args(&[
             "-NoProfile",
             "-Command",
-            "[Environment]::SetEnvironmentVariable('NVM_DIR', $null, 'User')"
+            "[Environment]::SetEnvironmentVariable('NVM_DIR', $null, 'User')",
         ])
         .status()
         .context("Failed to remove NVM_DIR")?;
-    
+
     if !status.success() {
         anyhow::bail!("Failed to remove NVM_DIR environment variable");
     }
-    
+
     // Notificar al sistema del cambio
     unsafe {
         let param = "Environment\0".encode_utf16().collect::<Vec<u16>>();
@@ -502,7 +528,7 @@ pub fn remove_nvm_dir() -> Result<()> {
             ptr::null_mut(),
         );
     }
-    
+
     Ok(())
 }
 

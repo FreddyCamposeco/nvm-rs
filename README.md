@@ -1,167 +1,93 @@
 # nvm-rs
 
-Node Version Manager implementado en Rust - Multiplataforma (Windows, Linux, macOS)
+🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma
 
 [![Version](https://img.shields.io/github/v/release/FreddyCamposeco/nvm-rs?label=version)](https://github.com/FreddyCamposeco/nvm-rs/releases/latest)
-[![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/rust-1.91%2B-orange.svg)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-28%20passing-brightgreen.svg)]()
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)]()
 [![Downloads](https://img.shields.io/github/downloads/FreddyCamposeco/nvm-rs/total)](https://github.com/FreddyCamposeco/nvm-rs/releases)
-[![Stars](https://img.shields.io/github/stars/FreddyCamposeco/nvm-rs?style=social)](https://github.com/FreddyCamposeco/nvm-rs)
+
+## 📋 Tabla de Contenidos
+
+- [Características](#-características)
+- [Instalación Rápida](#-instalación-rápida)
+- [Uso](#-uso)
+- [Estructura de Directorios](#-estructura-de-directorios)
+- [Comandos Disponibles](#-comandos-disponibles)
+- [Configuración](#-configuración)
+- [Desarrollo](#️-desarrollo)
+- [Contribuir](#-contribuir)
+- [Licencia](#-licencia)
 
 ## 🚀 Estado del Proyecto
 
 **Versión**: 0.1.0  
-**Estado**: ✅ **8/8 Fases Completadas** - Totalmente Funcional
-
-### ✅ Todas las Fases Completadas (21 Oct 2025)
-
-- ✅ **Fase 1**: Fundamentos Core (CLI, i18n, config, cache)
-- ✅ **Fase 2**: Gestión de Versiones Remotas (ls-remote, HTTP, filtros)
-- ✅ **Fase 3**: Instalación de Versiones (download, extract, checksums)
-- ✅ **Fase 4**: Comando Use (symlinks, .nvmrc, switching)
-- ✅ **Fase 5**: Listar Versiones Instaladas (ls, formateo, ordenamiento)
-- ✅ **Fase 6**: Sistema de Aliases (alias, unalias, aliases)
-- ✅ **Fase 7**: Cleanup & Maintenance (uninstall, cleanup)
-- ✅ **Fase 8**: Self-Update (auto-actualización opcional)
-
-**Tests**: 28/28 pasando ✓  
-**Comandos Funcionales**: 13  
-**Idiomas**: Español e Inglés
+**Estado**: ✅ Producción - Totalmente Funcional  
+**Plataformas**: Windows, Linux, macOS (x64 y ARM64)
 
 ## ✨ Características
 
-### Core Features
+- 🚀 **Rápido**: Escrito en Rust para máximo rendimiento
+- 🔄 **Gestión Completa**: Instala, desinstala y cambia entre versiones de Node.js
+- 🔍 **Búsqueda Inteligente**: Filtra versiones remotas por LTS, versión, código
+- ✅ **Seguro**: Verificación de integridad con checksums SHA256
+- 🔗 **Symlinks Inteligentes**: Junctions en Windows, symlinks en Unix (sin permisos admin)
+- 📦 **Cache Eficiente**: Sistema de caché con expiración automática
+- 🏷️ **Sistema de Aliases**: Crea alias personalizados (default, stable, etc.)
+- 🧹 **Auto-Limpieza**: Elimina versiones antiguas manteniendo LTS y versión activa
+- 🔄 **Auto-Instalación**: Instala, actualiza y desinstala nvm desde GitHub Releases
+- 🌍 **Multiidioma**: Interfaz completa en Español e Inglés
+- 📄 **`.nvmrc` Support**: Detección automática en árbol de directorios
+- 🎯 **PATH Homologado**: Estructura consistente entre Windows, Linux y macOS
 
-- 🔄 **Gestión de Versiones**: Instala, desinstala y cambia entre versiones de Node.js
-- 🔍 **Búsqueda Inteligente**: Lista versiones remotas con filtros (LTS, platform)
-- ✅ **Verificación de Integridad**: Checksums SHA256 automáticos
-- 🔗 **Symlinks Multiplataforma**: Junctions en Windows, symlinks en Unix
-- 📦 **Cache Inteligente**: Cache de versiones con expiración automática
+## 📦 Instalación Rápida
 
-### Advanced Features
-
-- 🏷️ **Sistema de Aliases**: Crea aliases personalizados para versiones
-- 🧹 **Limpieza Automática**: Elimina versiones antiguas manteniendo LTS
-- 🔄 **Auto-Update**: Actualización automática desde GitHub Releases (opcional)
-- 🌍 **Multiidioma**: Interfaz en Español e Inglés
-- 📄 **.nvmrc Support**: Detección automática de archivos .nvmrc
-
-## 📦 Instalación
-
-### Opción 1: Script de Instalación Automática (Recomendado)
+### Script de Instalación Automática (Recomendado)
 
 **Windows (PowerShell)**
 
 ```powershell
 # Instalación con un solo comando
-iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
 
 # O con opciones personalizadas
-$env:NVM_VERSION="v0.1.0"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.ps1 | iex
+$env:NVM_VERSION="v0.1.0"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
 ```
 
 **Linux / macOS (Bash)**
 
 ```bash
 # Instalación con un solo comando
-curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.sh | bash
 
 # O con opciones personalizadas
 export NVM_VERSION="v0.1.0"
 export NVM_INSTALL_DIR="$HOME/.nvm"
-curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.sh | bash
 ```
 
-El script automáticamente:
+**El script automáticamente:**
 - ✅ Detecta tu sistema operativo y arquitectura
 - ✅ Descarga la versión correcta desde GitHub Releases
 - ✅ Verifica la integridad con checksums SHA256
-- ✅ Instala el binario en la ubicación apropiada
-- ✅ Te ayuda a configurar el PATH
+- ✅ Instala el binario en `%USERPROFILE%\.nvm\bin` (Windows) o `~/.local/bin` (Unix)
+- ✅ Configura variables de entorno (`NVM_DIR`, `PATH`)
+- ✅ Crea backup de versiones anteriores
 
-### Opción 2: Usando los Comandos de nvm
-
-Si ya tienes una versión de nvm instalada, puedes actualizarla o instalar desde dentro:
-
-```bash
-# Instalar última versión
-nvm install-self
-
-# Instalar versión específica
-nvm install-self --version v0.2.0
-
-# Instalar con capacidad de auto-actualización
-nvm install-self --with-self-update
-
-# Instalar en directorio personalizado
-nvm install-self --dir /usr/local/bin
-
-# Actualizar a la última versión
-nvm update-self
-
-# Desinstalar nvm
-nvm uninstall-self
-```
-
-### Opción 3: Descarga Directa Manual
-
-**Windows (x64)**
-
-```powershell
-# 1. Descargar el binario
-# Ir a: https://github.com/FreddyCamposeco/nvm-rs/releases/latest
-# Descargar: nvm-v0.1.0-windows-x64.exe
-
-# 2. Verificar checksum (opcional pero recomendado)
-Get-FileHash -Path "nvm-v0.1.0-windows-x64.exe" -Algorithm SHA256
-
-# 3. Renombrar y mover
-Rename-Item "nvm-v0.1.0-windows-x64.exe" "nvm.exe"
-Move-Item "nvm.exe" "C:\Program Files\nvm\"
-
-# 4. Agregar a PATH si no está
-$env:PATH += ";C:\Program Files\nvm"
-
-# 5. Verificar instalación
-nvm --version
-```
-
-**Linux / macOS**
+### Gestión de nvm
 
 ```bash
-# 1. Descargar el binario (ajusta según tu plataforma)
-wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.1.0-linux-x64
-
-# 2. Verificar checksum (opcional)
-sha256sum nvm-v0.1.0-linux-x64
-
-# 3. Instalar
-chmod +x nvm-v0.1.0-linux-x64
-mv nvm-v0.1.0-linux-x64 ~/.local/bin/nvm
-
-# 4. Agregar a PATH en ~/.bashrc o ~/.zshrc
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-
-# 5. Verificar instalación
-nvm --version
+# Instalar/actualizar usando nvm (si ya lo tienes instalado)
+nvm install-self                 # Instalar última versión
+nvm install-self -v v0.2.0      # Instalar versión específica
+nvm update-self                  # Actualizar a la última versión
+nvm uninstall-self              # Desinstalar nvm del sistema
 ```
 
-### Opción 4: Compilar desde Código Fuente
+### Instalación Manual
 
-```bash
-# Clonar el repositorio
-git clone https://github.com/FreddyCamposeco/nvm-rs.git
-cd nvm-rs
-
-# Compilar (versión estándar)
-cargo build --release
-
-# Compilar con auto-update
-cargo build --release --features self-update
-
-# El binario estará en target/release/nvm
-```
+Para instalación manual o compilar desde código fuente, consulta la [Guía de Instalación Completa](INSTALLATION.md).
 
 ## 🔧 Uso
 
@@ -235,55 +161,79 @@ nvm cleanup --yes
 nvm doctor
 ```
 
-### Gestión de nvm
-
-```bash
-# Instalar/actualizar nvm desde GitHub
-nvm install-self              # Instalar última versión
-nvm install-self -v v0.2.0    # Instalar versión específica
-nvm install-self --with-self-update  # Con capacidad de auto-actualización
-
-# Actualizar nvm a la última versión
-nvm update-self
-nvm update-self -v v0.2.0     # Actualizar a versión específica
-
-# Desinstalar nvm del sistema
-nvm uninstall-self
-nvm uninstall-self --yes      # Sin confirmación
-```
-
-### Auto-Actualización (Feature Opcional)
-
-```bash
-# Actualizar nvm (solo si se compiló con --features self-update)
-nvm self-update
-```
-
-### Configuración
+### Configuración y Utilidades
 
 ```bash
 # Cambiar idioma
 nvm lang es    # Español
 nvm lang en    # English
+
+# Diagnóstico del sistema
+nvm doctor
 ```
+
+## 📁 Estructura de Directorios
+
+nvm-rs utiliza una estructura consistente entre plataformas:
+
+### Windows
+```
+%USERPROFILE%\.nvm\
+├── bin\
+│   └── nvm.exe                 # Binario de nvm
+├── current\
+│   └── bin\                    # Symlink → v{version}
+│       ├── node.exe
+│       ├── npm.cmd
+│       └── npx.cmd
+├── v18.17.0\                   # Versión instalada
+│   ├── node.exe
+│   ├── npm.cmd
+│   └── node_modules\
+└── downloads\                  # Archivos temporales
+```
+
+### Linux / macOS
+```
+~/.nvm/
+├── current/
+│   └── bin/                    # Symlink → v{version}/bin
+│       ├── node
+│       ├── npm
+│       └── npx
+├── v18.17.0/                   # Versión instalada
+│   ├── bin/
+│   │   ├── node
+│   │   ├── npm
+│   │   └── npx
+│   └── lib/
+└── downloads/                  # Archivos temporales
+
+~/.local/bin/
+└── nvm                         # Binario de nvm
+```
+
+**Variables de entorno configuradas:**
+- `NVM_DIR`: Directorio base de datos (`%USERPROFILE%\.nvm` o `~/.nvm`)
+- `PATH`: Incluye `%NVM_DIR%\bin` (nvm) y `%NVM_DIR%\current\bin` (Node.js activo)
+
+Ver [PATH_STRUCTURE.md](PATH_STRUCTURE.md) para detalles completos sobre la estructura homologada.
 
 ## 🌍 Internacionalización
 
-Configure el idioma mediante:
+**Idiomas soportados:**
+- 🇬🇧 `en` - English (default)
+- 🇪🇸 `es` - Español
 
+**Configurar idioma:**
 ```bash
 # Variable de entorno
-export NVM_LANG=es    # En Unix
-$env:NVM_LANG="es"    # En Windows PowerShell
+export NVM_LANG=es              # Unix
+$env:NVM_LANG="es"              # Windows
 
 # O usando el comando
 nvm lang es
 ```
-
-**Idiomas soportados:**
-
-- `en` - English (default)
-- `es` - Español
 
 ## 🏗️ Arquitectura
 
@@ -361,33 +311,51 @@ cargo doc --open
 
 ## 📊 Estadísticas del Proyecto
 
-- **Líneas de Código**: ~3,500
-- **Módulos**: 13
-- **Tests Unitarios**: 28
-- **Comandos**: 13
-- **Dependencias**: ~30
-- **Tiempo de Compilación**: 22s (release), 34s (release + self-update)
+| Métrica | Valor |
+|---------|-------|
+| **Líneas de Código** | ~4,000 |
+| **Módulos** | 14 |
+| **Comandos** | 15 |
+| **Idiomas** | 2 (Español, Inglés) |
+| **Plataformas** | 6 (Windows x64/x86, Linux x64/ARM64, macOS x64/ARM64) |
+| **Dependencias** | ~15 principales |
 
 ## 🎯 Comandos Disponibles
 
+### Gestión de Node.js
 | Comando | Descripción |
 |---------|-------------|
-| `nvm install <version>` | Instalar versión de Node.js |
-| `nvm uninstall <version>` | Desinstalar versión |
-| `nvm use <version>` | Cambiar a una versión |
-| `nvm ls` | Listar versiones instaladas |
-| `nvm ls-remote [--lts]` | Listar versiones remotas |
-| `nvm current` | Mostrar versión actual |
-| `nvm alias <name> <ver>` | Crear alias |
+| `nvm install <version>` | Instalar versión de Node.js (soporta aliases: latest, lts, lts/iron) |
+| `nvm uninstall <version>` | Desinstalar versión (usa --force para desinstalar versión activa) |
+| `nvm use [version]` | Cambiar a una versión (busca .nvmrc si no se especifica) |
+| `nvm ls` | Listar versiones instaladas localmente |
+| `nvm ls-remote [--lts]` | Listar versiones disponibles en nodejs.org |
+| `nvm current` | Mostrar versión actualmente en uso |
+
+### Sistema de Aliases
+| Comando | Descripción |
+|---------|-------------|
+| `nvm alias <name> <ver>` | Crear alias personalizado (ej: default, stable) |
 | `nvm unalias <name>` | Eliminar alias |
-| `nvm aliases` | Listar aliases |
-| `nvm cleanup [--yes]` | Limpiar versiones antiguas |
-| `nvm doctor` | Diagnóstico del sistema |
-| `nvm install-self` | Instalar/reinstalar nvm desde GitHub |
-| `nvm update-self` | Actualizar nvm a la última versión |
-| `nvm uninstall-self` | Desinstalar nvm del sistema |
-| `nvm self-update` | Actualizar nvm (opcional, requiere feature) |
-| `nvm lang <locale>` | Cambiar idioma |
+| `nvm aliases` | Listar todos los aliases configurados |
+
+### Mantenimiento
+| Comando | Descripción |
+|---------|-------------|
+| `nvm cleanup [--yes]` | Limpiar versiones no usadas (mantiene LTS y actual) |
+| `nvm doctor` | Diagnóstico del sistema y configuración |
+
+### Gestión de nvm
+| Comando | Descripción |
+|---------|-------------|
+| `nvm install-self [-v ver] [-d dir]` | Instalar/reinstalar nvm desde GitHub Releases |
+| `nvm update-self [-v ver]` | Actualizar nvm a la última versión disponible |
+| `nvm uninstall-self [--yes]` | Desinstalar nvm del sistema |
+
+### Configuración
+| Comando | Descripción |
+|---------|-------------|
+| `nvm lang <locale>` | Cambiar idioma (es/en) |
 
 ## 🤝 Contribuir
 
@@ -423,15 +391,28 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - Comunidad de Rust
 - Proyecto Node.js
 
-## 📚 Referencias
+## 📚 Documentación Adicional
 
-- [Documentación del Proyecto](./docs/)
-- [Plan de Migración](MIGRATION_PLAN.md)
-- [Changelog](CHANGELOG.md)
+- 📖 [Guía Completa de Instalación](INSTALLATION.md) - Métodos de instalación detallados
+- 🗺️ [Estructura de Directorios y PATH](PATH_STRUCTURE.md) - Arquitectura homologada multiplataforma
+- 📝 [Changelog](CHANGELOG.md) - Historial de cambios y versiones
+- 🤝 [Guía de Contribución](CONTRIBUTING.md) - Cómo contribuir al proyecto
+- 🔄 [Plan de Migración](MIGRATION_PLAN.md) - Roadmap y fases completadas
+
+## 🔗 Enlaces Útiles
+
 - [Node.js Official Site](https://nodejs.org)
 - [Rust Programming Language](https://www.rust-lang.org)
+- [GitHub Releases](https://github.com/FreddyCamposeco/nvm-rs/releases)
 
 ---
 
-**¿Encontraste un bug?** [Reporta un issue](https://github.com/FreddyCamposeco/nvm-rs/issues)  
-**¿Tienes una idea?** [Inicia una discusión](https://github.com/FreddyCamposeco/nvm-rs/discussions)
+<div align="center">
+
+**¿Encontraste un bug?** → [Reporta un issue](https://github.com/FreddyCamposeco/nvm-rs/issues)  
+**¿Tienes una idea?** → [Inicia una discusión](https://github.com/FreddyCamposeco/nvm-rs/discussions)  
+**¿Te gusta el proyecto?** → [Dale una ⭐](https://github.com/FreddyCamposeco/nvm-rs)
+
+Hecho con ❤️ y 🦀 por [Freddy Camposeco](https://github.com/FreddyCamposeco)
+
+</div>
