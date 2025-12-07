@@ -74,12 +74,12 @@ try {
     # Usar WebClient para mostrar progreso
     $webClient = New-Object System.Net.WebClient
     $webClient.Headers.Add("User-Agent", "nvm-rs-installer")
-    
+
     Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -Action {
         $progress = $EventArgs.ProgressPercentage
         Write-Progress -Activity "Descargando nvm-rs" -Status "$progress% completado" -PercentComplete $progress
     } | Out-Null
-    
+
     $webClient.DownloadFile($downloadUrl, $downloadPath)
     $webClient.Dispose()
     Write-Progress -Activity "Descargando nvm-rs" -Completed
@@ -128,19 +128,39 @@ try {
 Write-Info ""
 Write-Info "Configurando variables de entorno..."
 
-# 1. Configurar NVM_DIR
-$currentNvmDir = [Environment]::GetEnvironmentVariable("NVM_DIR", "User")
-if ($currentNvmDir -and (Test-Path $currentNvmDir)) {
-    Write-Info "Variable NVM_DIR ya existe: $currentNvmDir"
+# 1. Configurar NVM_HOME (home directory)
+$currentNvmHome = [Environment]::GetEnvironmentVariable("NVM_HOME", "User")
+if ($currentNvmHome -and (Test-Path $currentNvmHome)) {
+    Write-Info "Variable NVM_HOME ya existe: $currentNvmHome"
 } else {
-    $nvmDataDir = "$env:USERPROFILE\.nvm"
+    $nvmHomeDir = "$env:USERPROFILE\.nvm"
     try {
-        [Environment]::SetEnvironmentVariable("NVM_DIR", $nvmDataDir, "User")
-        $env:NVM_DIR = $nvmDataDir
-        Write-Success "✓ Variable NVM_DIR establecida: $nvmDataDir"
+        [Environment]::SetEnvironmentVariable("NVM_HOME", $nvmHomeDir, "User")
+        $env:NVM_HOME = $nvmHomeDir
+        Write-Success "✓ Variable NVM_HOME establecida: $nvmHomeDir"
     } catch {
-        Write-Warning "⚠ No se pudo establecer NVM_DIR: $_"
+        Write-Warning "⚠ No se pudo establecer NVM_HOME: $_"
     }
+}
+
+# 2. Configurar NVM_BIN (binario nvm)
+try {
+    $nvmBinDir = "$env:USERPROFILE\.nvm\bin"
+    [Environment]::SetEnvironmentVariable("NVM_BIN", $nvmBinDir, "User")
+    $env:NVM_BIN = $nvmBinDir
+    Write-Success "✓ Variable NVM_BIN establecida: $nvmBinDir"
+} catch {
+    Write-Warning "⚠ No se pudo establecer NVM_BIN: $_"
+}
+
+# 3. Configurar NVM_NODE (node activo)
+try {
+    $nvmNodeDir = "$env:USERPROFILE\.nvm\current\bin"
+    [Environment]::SetEnvironmentVariable("NVM_NODE", $nvmNodeDir, "User")
+    $env:NVM_NODE = $nvmNodeDir
+    Write-Success "✓ Variable NVM_NODE establecida: $nvmNodeDir"
+} catch {
+    Write-Warning "⚠ No se pudo establecer NVM_NODE: $_"
 }
 
 # Verificar PATH
@@ -148,36 +168,35 @@ Write-Info ""
 Write-Info "Verificando configuración del PATH..."
 $currentUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
 $pathEntries = $currentUserPath -split ';'
-$isInPath = $pathEntries -contains $InstallDir
-$nvmCurrentDir = "$env:USERPROFILE\.nvm\current"
-$isCurrentInPath = $pathEntries -contains $nvmCurrentDir
+$isNvmBinInPath = $pathEntries -contains "$env:USERPROFILE\.nvm\bin"
+$isNvmNodeInPath = $pathEntries -contains "$env:USERPROFILE\.nvm\current\bin"
 
-if ($isInPath -and $isCurrentInPath) {
-    Write-Success "✓ El directorio de instalación y versión activa ya están en el PATH"
-} else {
-    Write-Warning "⚠ Falta configurar el PATH"
-    
+if ($isNvmBinInPath -and $isNvmNodeInPath) {
+    Write-Success "✓ NVM_BIN y NVM_NODE ya están configurados en el PATH"
+else {
+    Write-Warning "⚠ Falta configurar el PATH completo"
+
     if (-not $NoPrompt) {
         Write-Info ""
         $response = Read-Host "¿Desea agregar al PATH del usuario actual? (S/N)"
         if ($response -eq 'S' -or $response -eq 's' -or $response -eq 'Y' -or $response -eq 'y') {
             try {
                 $newPath = $currentUserPath
-                
-                # Agregar InstallDir si no está
-                if (-not $isInPath) {
-                    $newPath = if ($newPath) { "$newPath;$InstallDir" } else { $InstallDir }
-                    Write-Success "✓ Agregado al PATH: $InstallDir"
+
+                # Agregar NVM_BIN si no está
+                if (-not $isNvmBinInPath) {
+                    $newPath = if ($newPath) { "$newPath;$env:USERPROFILE\.nvm\bin" } else { "$env:USERPROFILE\.nvm\bin" }
+                    Write-Success "✓ Agregado al PATH: $env:USERPROFILE\.nvm\bin"
                 }
-                
-                # Agregar current dir si no está
-                if (-not $isCurrentInPath) {
-                    $newPath = if ($newPath) { "$newPath;$nvmCurrentDir" } else { $nvmCurrentDir }
-                    Write-Success "✓ Agregado al PATH: $nvmCurrentDir"
+
+                # Agregar NVM_NODE si no está
+                if (-not $isNvmNodeInPath) {
+                    $newPath = if ($newPath) { "$newPath;$env:USERPROFILE\.nvm\current\bin" } else { "$env:USERPROFILE\.nvm\current\bin" }
+                    Write-Success "✓ Agregado al PATH: $env:USERPROFILE\.nvm\current\bin"
                 }
-                
+
                 [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
-                $env:PATH = "$env:PATH;$InstallDir;$nvmCurrentDir"
+                $env:PATH = "$env:PATH;$env:USERPROFILE\.nvm\bin;$env:USERPROFILE\.nvm\current\bin"
                 Write-Success "✓ PATH actualizado correctamente"
                 Write-Info "⚠ Es posible que necesite reiniciar su terminal para ver los cambios"
             } catch {
@@ -186,8 +205,8 @@ if ($isInPath -and $isCurrentInPath) {
                 Write-Info "Para agregar manualmente:"
                 Write-Info "1. Buscar 'Variables de entorno' en el menú Inicio"
                 Write-Info "2. Editar la variable PATH del usuario"
-                Write-Info "3. Agregar: $InstallDir"
-                Write-Info "4. Agregar: $nvmCurrentDir"
+                Write-Info "3. Agregar: %USERPROFILE%\.nvm\bin"
+                Write-Info "4. Agregar: %USERPROFILE%\.nvm\current\bin"
             }
         }
     } else {
@@ -195,10 +214,11 @@ if ($isInPath -and $isCurrentInPath) {
         Write-Info "Para agregar al PATH manualmente:"
         Write-Info "1. Buscar 'Variables de entorno' en el menú Inicio"
         Write-Info "2. Editar la variable PATH del usuario"
-        Write-Info "3. Agregar: $InstallDir"
+        Write-Info "3. Agregar: %USERPROFILE%\.nvm\bin"
+        Write-Info "4. Agregar: %USERPROFILE%\.nvm\current\bin"
         Write-Info ""
         Write-Info "O ejecutar en PowerShell:"
-        Write-Info '[Environment]::SetEnvironmentVariable("Path", $env:Path + ";' + $InstallDir + '", "User")'
+        Write-Info '[Environment]::SetEnvironmentVariable("Path", $env:Path + ";%USERPROFILE%\.nvm\bin;%USERPROFILE%\.nvm\current\bin", "User")'
     }
 }
 
