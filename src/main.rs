@@ -371,7 +371,8 @@ async fn main() -> Result<()> {
         }
 
         Commands::LsRemote { lts } => {
-            use crate::core::versions::{format_version_display, VersionFilter};
+            use crate::core::versions::VersionFilter;
+            use std::collections::BTreeMap;
 
             println!("{}", t!("fetching_versions"));
 
@@ -394,9 +395,21 @@ async fn main() -> Result<()> {
 
                     let filtered_versions = filter.apply(versions.clone());
 
-                    // Limit display to prevent overwhelming output
-                    let limit = 50;
-                    let display_versions: Vec<_> = filtered_versions.iter().take(limit).collect();
+                    // Get installed versions
+                    let installed = core::get_installed_versions(&config).unwrap_or_default();
+
+                    // Group versions by major version
+                    let mut groups: BTreeMap<u32, Vec<_>> = BTreeMap::new();
+                    for version in &filtered_versions {
+                        // Extract major version (e.g., "v24.11.1" -> 24)
+                        if let Some(major_str) = version.version.strip_prefix('v') {
+                            if let Some(major) = major_str.split('.').next() {
+                                if let Ok(major_num) = major.parse::<u32>() {
+                                    groups.entry(major_num).or_insert_with(Vec::new).push(version);
+                                }
+                            }
+                        }
+                    }
 
                     // Show filter info
                     if lts {
@@ -406,23 +419,28 @@ async fn main() -> Result<()> {
                     println!(
                         "\n{} {} {} {}:",
                         t!("showing"),
-                        display_versions.len(),
+                        filtered_versions.len(),
                         t!("of"),
-                        filtered_versions.len()
+                        versions.len()
                     );
 
-                    // Display versions
-                    for version in display_versions {
-                        println!("{}", format_version_display(version));
-                    }
+                    // Display grouped versions
+                    for (major, mut major_versions) in groups.into_iter().rev() {
+                        // Sort versions in descending order
+                        major_versions.sort_by(|a, b| b.version.cmp(&a.version));
 
-                    // Show hint if there are more versions
-                    if filtered_versions.len() > limit {
-                        println!("\n{} {} {}",
-                            t!("and"),
-                            filtered_versions.len() - limit,
-                            t!("more_versions")
-                        );
+                        println!("\n v{} releases:", major);
+
+                        for version in major_versions {
+                            let is_installed = installed.contains(&version.version);
+                            let status = if is_installed { "[installed]" } else { "" };
+
+                            if let Some(lts_name) = version.lts.name() {
+                                println!("  {} (LTS: {}) {}", version.version, lts_name, status);
+                            } else {
+                                println!("  {} {}", version.version, status);
+                            }
+                        }
                     }
                 }
                 Err(e) => {
