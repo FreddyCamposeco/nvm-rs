@@ -5,13 +5,14 @@
 ### 📁 Estructura de Directorios
 
 #### Windows
+
 ```
 C:\Users\{usuario}\
-├── .nvm\                          # NVM_DIR
+├── .nvm\                         # NVM_HOME
 │   ├── bin\
-│   │   └── nvm.exe               # Binario de nvm
+│   │   └── nvm.exe               # Binario nvm ($NVM_BIN)
 │   ├── current\
-│   │   └── bin\                  # Symlink → v{version}
+│   │   └── bin\                  # Junction → v{version}\ ($NVM_NODE)
 │   │       ├── node.exe
 │   │       ├── npm.cmd
 │   │       └── npx.cmd
@@ -22,15 +23,18 @@ C:\Users\{usuario}\
 │   │   └── node_modules\
 │   ├── v20.10.0\                 # Otra versión
 │   │   └── ...
-│   └── downloads\                # Archivos temporales
+│   └── temp\                     # Descargas temporales
 ```
 
 #### Linux/macOS
+
 ```
 /home/{usuario}/  o  /Users/{usuario}/
-├── .nvm/                          # NVM_DIR
+├── .nvm/                         # NVM_HOME
+│   ├── bin/
+│   │   └── nvm                   # Binario nvm ($NVM_BIN)
 │   ├── current/
-│   │   └── bin/                  # Symlink → v{version}/bin
+│   │   └── bin/                  # Symlink → v{version}/bin ($NVM_NODE)
 │   │       ├── node
 │   │       ├── npm
 │   │       └── npx
@@ -42,10 +46,7 @@ C:\Users\{usuario}\
 │   │   └── lib/
 │   ├── v20.10.0/                 # Otra versión
 │   │   └── ...
-│   └── downloads/                # Archivos temporales
-├── .local/
-│   └── bin/
-│       └── nvm                   # Binario de nvm
+│   └── temp/                     # Descargas temporales
 ```
 
 ---
@@ -53,32 +54,38 @@ C:\Users\{usuario}\
 ## 🔗 Variables de Entorno
 
 ### Windows
-```powershell
-# Variable de entorno persistente
-NVM_DIR = C:\Users\{usuario}\.nvm
 
-# PATH del usuario incluye:
-PATH = C:\Users\{usuario}\.nvm\bin;C:\Users\{usuario}\.nvm\current\bin;...
+```powershell
+# Variables de entorno persistentes
+NVM_HOME = %USERPROFILE%\.nvm
+NVM_BIN = %NVM_HOME%\bin
+NVM_NODE = %NVM_HOME%\current\bin
+
+# PATH del usuario incluye (en orden):
+PATH = %NVM_HOME%\bin;%NVM_HOME%\current\bin;...
 ```
 
 ### Linux/macOS
+
 ```bash
 # En .bashrc o .zshrc
-export NVM_DIR="$HOME/.nvm"
-export PATH="$HOME/.local/bin:$NVM_DIR/current/bin:$PATH"
+export NVM_HOME="$HOME/.nvm"
+export NVM_BIN="$NVM_HOME/bin"
+export NVM_NODE="$NVM_HOME/current/bin"
+export PATH="$NVM_HOME/bin:$NVM_HOME/current/bin:$PATH"
 ```
 
 ---
 
 ## 📊 Tabla Comparativa
 
-| Concepto | Windows | Linux/macOS | Homologado |
-|----------|---------|-------------|------------|
-| **NVM_DIR** | `%USERPROFILE%\.nvm` | `~/.nvm` | `$NVM_DIR` |
-| **Binario nvm** | `%USERPROFILE%\.nvm\bin\nvm.exe` | `~/.local/bin/nvm` | N/A |
-| **Versión activa** | `%NVM_DIR%\current\bin` | `$NVM_DIR/current/bin` | ✅ `$NVM_DIR/current/bin` |
-| **Node instalado** | `%NVM_DIR%\v18.17.0\node.exe` | `$NVM_DIR/v18.17.0/bin/node` | `$NVM_DIR/v{version}` |
-| **Separador PATH** | `;` (punto y coma) | `:` (dos puntos) | N/A |
+| Concepto | Windows | Linux/macOS | Homologado | Variable |
+|----------|---------|-------------|------------|----------|
+| **nvm home** | `%USERPROFILE%\.nvm` | `~/.nvm` | `$NVM_HOME` | `NVM_HOME` |
+| **binario nvm** | `%NVM_HOME%\bin\nvm.exe` | `$NVM_HOME/bin/nvm` | `$NVM_BIN` | `NVM_BIN` |
+| **node activo** | `%NVM_HOME%\current\bin` | `$NVM_HOME/current/bin` | `$NVM_HOME/current/bin` | `NVM_NODE` |
+| **Node instalado** | `%NVM_HOME%\v{version}\*` | `$NVM_HOME/v{version}/bin/*` | `$NVM_HOME/v{version}` | N/A |
+| **Separador PATH** | `;` (punto y coma) | `:` (dos puntos) | Según SO | N/A |
 
 ---
 
@@ -87,24 +94,25 @@ export PATH="$HOME/.local/bin:$NVM_DIR/current/bin:$PATH"
 Para escribir código que funcione en ambos sistemas:
 
 ```rust
-// ✅ Correcto - Usa PathBuf
-let nvm_dir = dirs::home_dir()?.join(".nvm");
-let current_bin = nvm_dir.join("current").join("bin");
-let version_dir = nvm_dir.join("v18.17.0");
+// ✅ Rutas homologadas - Usa PathBuf
+let nvm_home = home::home_dir()?.join(".nvm");
+let nvm_bin = nvm_home.join("bin");         // $NVM_BIN
+let nvm_node = nvm_home.join("current").join("bin");  // $NVM_NODE (homologado)
+let version_dir = nvm_home.join("v18.17.0"); // $NVM_HOME/v{version}
 
-// ✅ Para acceder a binarios
+// ✅ Para acceder a binarios de versión
 #[cfg(windows)]
 let node_exe = version_dir.join("node.exe");
 
 #[cfg(not(windows))]
 let node_exe = version_dir.join("bin").join("node");
 
-// ✅ Para el symlink/junction
+// ✅ Para el symlink/junction activo
 #[cfg(windows)]
-let symlink_target = version_dir;  // Apunta a la raíz
+let symlink_target = version_dir;  // Junction: current\bin → v{version}\
 
 #[cfg(not(windows))]
-let symlink_target = version_dir.join("bin");  // Apunta a bin/
+let symlink_target = version_dir.join("bin");  // Symlink: current/bin → v{version}/bin
 ```
 
 ---
@@ -112,51 +120,69 @@ let symlink_target = version_dir.join("bin");  // Apunta a bin/
 ## 🔄 Cómo funciona el Symlink
 
 ### Windows (Junction)
+
 ```
-current\bin  →  v18.17.0\
+%NVM_HOME%\current\bin  →  %NVM_HOME%\v18.17.0\
 ├── node.exe
 ├── npm.cmd
 └── npx.cmd
 ```
+
 - **Tipo**: Directory Junction (no requiere permisos admin)
-- **PATH apunta a**: `%NVM_DIR%\current\bin`
-- **Resuelve a**: `%NVM_DIR%\v18.17.0\node.exe`
+- **Variable**: `$NVM_NODE = %NVM_HOME%\current\bin`
+- **Destino**: `%NVM_HOME%\v{version}\` (raíz de versión)
+- **Resolución**: `%NVM_HOME%\v18.17.0\node.exe`
 
 ### Linux/macOS (Symlink)
+
 ```
-current/bin  →  v18.17.0/bin/
+$NVM_HOME/current/bin  →  $NVM_HOME/v18.17.0/bin/
 ├── node
 ├── npm
 └── npx
 ```
+
 - **Tipo**: Symbolic Link estándar
-- **PATH apunta a**: `$NVM_DIR/current/bin`
-- **Resuelve a**: `$NVM_DIR/v18.17.0/bin/node`
+- **Variable**: `$NVM_NODE = $NVM_HOME/current/bin`
+- **Destino**: `$NVM_HOME/v{version}/bin/` (carpeta bin de versión)
+- **Resolución**: `$NVM_HOME/v18.17.0/bin/node`
 
 ---
 
 ## 📝 Configuración en Scripts de Instalación
 
 ### install.ps1 (Windows)
-```powershell
-$NvmDir = "$env:USERPROFILE\.nvm"
-$NvmBin = "$NvmDir\bin"
-$CurrentBin = "$NvmDir\current\bin"
 
-# Agregar al PATH
-[Environment]::SetEnvironmentVariable('NVM_DIR', $NvmDir, 'User')
-# Agregar $NvmBin y $CurrentBin al PATH del usuario
+```powershell
+# Definir variables homologadas
+$NvmHome = "$env:USERPROFILE\.nvm"
+$NvmBin = "$NvmHome\bin"
+$NvmNode = "$NvmHome\current\bin"
+
+# Agregar variables de entorno persistentes
+[Environment]::SetEnvironmentVariable('NVM_HOME', $NvmHome, 'User')
+[Environment]::SetEnvironmentVariable('NVM_BIN', $NvmBin, 'User')
+[Environment]::SetEnvironmentVariable('NVM_NODE', $NvmNode, 'User')
+
+# Actualizar PATH (agregar NVM_BIN y NVM_NODE)
+$currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+$newPath = "$NvmBin;$NvmNode;$currentPath"
+[Environment]::SetEnvironmentVariable('PATH', $newPath, 'User')
 ```
 
 ### install.sh (Linux/macOS)
+
 ```bash
-NVM_DIR="$HOME/.nvm"
-NVM_BIN="$HOME/.local/bin"
-CURRENT_BIN="$NVM_DIR/current/bin"
+# Definir variables homologadas
+NVM_HOME="$HOME/.nvm"
+NVM_BIN="$NVM_HOME/bin"
+NVM_NODE="$NVM_HOME/current/bin"
 
 # Agregar a .bashrc o .zshrc
-echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
-echo 'export PATH="$HOME/.local/bin:$NVM_DIR/current/bin:$PATH"' >> ~/.bashrc
+echo 'export NVM_HOME="$HOME/.nvm"' >> ~/.bashrc
+echo 'export NVM_BIN="$NVM_HOME/bin"' >> ~/.bashrc
+echo 'export NVM_NODE="$NVM_HOME/current/bin"' >> ~/.bashrc
+echo 'export PATH="$NVM_HOME/bin:$NVM_HOME/current/bin:$PATH"' >> ~/.bashrc
 ```
 
 ---
@@ -164,7 +190,7 @@ echo 'export PATH="$HOME/.local/bin:$NVM_DIR/current/bin:$PATH"' >> ~/.bashrc
 ## ✅ Ventajas de esta Estructura Homologada
 
 1. **Consistencia**: `current/bin` existe en ambas plataformas
-2. **Un solo PATH**: `$NVM_DIR/current/bin` funciona igual en ambos sistemas
+2. **Un solo PATH**: `$NVM_HOME/current/bin` funciona igual en ambos sistemas
 3. **Aislamiento**: Las versiones de Node están separadas por carpetas
 4. **Fácil cambio**: Solo se actualiza el symlink `current/bin`
 5. **No conflictos**: Cada versión está autocontenida
