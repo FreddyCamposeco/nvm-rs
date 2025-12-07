@@ -131,7 +131,8 @@ Write-Info "Configurando variables de entorno..."
 # 1. Configurar NVM_HOME (home directory)
 $currentNvmHome = [Environment]::GetEnvironmentVariable("NVM_HOME", "User")
 if ($currentNvmHome -and (Test-Path $currentNvmHome)) {
-    Write-Info "Variable NVM_HOME ya existe: $currentNvmHome"
+    $nvmHomeDir = $currentNvmHome
+    Write-Info "Variable NVM_HOME ya existe: $nvmHomeDir"
 } else {
     $nvmHomeDir = "$env:USERPROFILE\.nvm"
     try {
@@ -145,7 +146,7 @@ if ($currentNvmHome -and (Test-Path $currentNvmHome)) {
 
 # 2. Configurar NVM_BIN (binario nvm)
 try {
-    $nvmBinDir = "$env:USERPROFILE\.nvm\bin"
+    $nvmBinDir = "$nvmHomeDir\bin"
     [Environment]::SetEnvironmentVariable("NVM_BIN", $nvmBinDir, "User")
     $env:NVM_BIN = $nvmBinDir
     Write-Success "✓ Variable NVM_BIN establecida: $nvmBinDir"
@@ -155,12 +156,41 @@ try {
 
 # 3. Configurar NVM_NODE (node activo)
 try {
-    $nvmNodeDir = "$env:USERPROFILE\.nvm\current\bin"
+    $nvmNodeDir = "$nvmHomeDir\current\bin"
     [Environment]::SetEnvironmentVariable("NVM_NODE", $nvmNodeDir, "User")
     $env:NVM_NODE = $nvmNodeDir
     Write-Success "✓ Variable NVM_NODE establecida: $nvmNodeDir"
 } catch {
     Write-Warning "⚠ No se pudo establecer NVM_NODE: $_"
+}
+
+# 4. Crear estructura de directorios y shims
+try {
+    New-Item -ItemType Directory -Path $nvmHomeDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $nvmBinDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $nvmNodeDir -Force | Out-Null
+
+    # Copiar el binario a NVM_BIN
+    Copy-Item -Path $exePath -Destination (Join-Path $nvmBinDir "nvm.exe") -Force
+
+    # Crear shim CMD
+    $cmdShim = @'
+@echo off
+"%~dp0nvm.exe" %*
+'@
+    $cmdShimPath = Join-Path $nvmBinDir "nvm.cmd"
+    Set-Content -Path $cmdShimPath -Value $cmdShim -Encoding ASCII
+
+    # Crear shim PowerShell
+    $psShim = @'
+& "$PSScriptRoot\nvm.exe" @Args
+'@
+    $psShimPath = Join-Path $nvmBinDir "nvm.ps1"
+    Set-Content -Path $psShimPath -Value $psShim -Encoding ASCII
+
+    Write-Success "✓ Directorios y shims creados en $nvmBinDir"
+} catch {
+    Write-Warning "⚠ No se pudieron crear directorios/shims: $_"
 }
 
 # Verificar PATH
