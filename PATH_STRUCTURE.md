@@ -49,8 +49,6 @@ C:\Users\{usuario}\
 │   └── temp/                     # Descargas temporales
 ```
 
----
-
 ## 🔗 Variables de Entorno
 
 ### Windows
@@ -75,8 +73,6 @@ export NVM_NODE="$NVM_HOME/current/bin"
 export PATH="$NVM_HOME/bin:$NVM_HOME/current/bin:$PATH"
 ```
 
----
-
 ## 📊 Tabla Comparativa
 
 | Concepto | Windows | Linux/macOS | Homologado | Variable |
@@ -86,8 +82,6 @@ export PATH="$NVM_HOME/bin:$NVM_HOME/current/bin:$PATH"
 | **node activo** | `%NVM_HOME%\current\bin` | `$NVM_HOME/current/bin` | `$NVM_NODE` | `NVM_NODE` |
 | **Node instalado** | `%NVM_HOME%\v{version}\*` | `$NVM_HOME/v{version}/bin/*` | `$NVM_HOME/v{version}` | N/A |
 | **Separador PATH** | `;` (punto y coma) | `:` (dos puntos) | Según SO | N/A |
-
----
 
 ## 🎯 Rutas Homologadas (Cross-Platform)
 
@@ -114,8 +108,6 @@ let symlink_target = version_dir;  // Junction: current\bin → v{version}\
 #[cfg(not(windows))]
 let symlink_target = version_dir.join("bin");  // Symlink: current/bin → v{version}/bin
 ```
-
----
 
 ## 🔄 Cómo funciona el Symlink
 
@@ -146,8 +138,6 @@ $NVM_HOME/current/bin  →  $NVM_HOME/v18.17.0/bin/
 - **Variable**: `$NVM_NODE = $NVM_HOME/current/bin`
 - **Destino**: `$NVM_HOME/v{version}/bin/` (carpeta bin de versión)
 - **Resolución**: `$NVM_HOME/v18.17.0/bin/node`
-
----
 
 ## 📝 Configuración en Scripts de Instalación
 
@@ -185,8 +175,6 @@ echo 'export NVM_NODE="$NVM_HOME/current/bin"' >> ~/.bashrc
 echo 'export PATH="$NVM_HOME/bin:$NVM_HOME/current/bin:$PATH"' >> ~/.bashrc
 ```
 
----
-
 ## ✅ Ventajas de esta Estructura Homologada
 
 1. **Consistencia**: `current/bin` existe en ambas plataformas
@@ -194,8 +182,6 @@ echo 'export PATH="$NVM_HOME/bin:$NVM_HOME/current/bin:$PATH"' >> ~/.bashrc
 3. **Aislamiento**: Las versiones de Node están separadas por carpetas
 4. **Fácil cambio**: Solo se actualiza el symlink `current/bin`
 5. **No conflictos**: Cada versión está autocontenida
-
----
 
 ## 🚀 Comandos de Usuario (Idénticos en ambos sistemas)
 
