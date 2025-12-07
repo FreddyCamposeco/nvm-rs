@@ -1,10 +1,56 @@
-# Changelog v0.2.0 - Release Notes
+# Changelog
+
+## v0.3.0 (En Desarrollo)
+
+**Status**: 🚀 Próximo Release
+
+### ✨ Nuevas Características
+
+#### 1. Limpieza Completa de Desinstalación (CRÍTICO)
+
+- **Función**: `full_uninstall_cleanup()` en `src/core/installer.rs`
+- **Limpieza de**:
+  - ✓ Binario ejecutable (nvm.exe)
+  - ✓ Variables de entorno: NVM_HOME, NVM_BIN, NVM_NODE, NODE_MIRROR
+  - ✓ Entradas en PATH (tanto NVM_BIN como Node bin)
+  - ✓ Directorio de datos (~/.nvm con todas las versiones)
+  - ✓ Archivos de configuración residuales
+  - ✓ Notificación al sistema de cambios
+- **Verificación**: Sistema queda limpio como si nvm nunca hubiera sido instalado
+- **Windows**: Completa limpieza de variables de usuario
+- **Unix**: Stubs preparados para futura expansión
+
+#### 2. Mejoras de Instalación/Desinstalación
+
+- Integración de `full_uninstall_cleanup()` en comando `uninstall-self`
+- Confirmación antes de desinstalación
+- Mensajes informativos claros en cada paso
+- Logging de operaciones completadas vs fallidas
+
+### 📋 Características Planeadas para v0.3.0+
+
+#### v0.3.0 Priority Features
+
+- [ ] Detección de Node.js del sistema (`which node` / `where node`)
+- [ ] Cache de versiones remotas con TTL configurable
+- [ ] Comando `stats` - resumen de instalación
+- [ ] Mejora de LTS labels (mostrar nombre: Iron, Jod, etc.)
+
+#### v0.4.0+ Features
+
+- [ ] Configuración desde archivo (nvm.toml/settings.json)
+- [ ] Integración con direnv
+- [ ] Plugin system
+- [ ] Telemetría opcional
+- [ ] Soporte para package managers (npm, yarn, pnpm)
+
+## v0.2.0 - Release Notes
 
 **Release Date**: Diciembre 7, 2025
 **Previous Version**: v0.1.1
 **Status**: ✅ Production Ready
 
-## 🎉 Cambios Principales
+### 🎉 Cambios Principales
 
 ### ✨ Nuevas Características
 
@@ -47,6 +93,7 @@
 - **Estimación de esfuerzo ahorrado**: 2-3 horas
 
 ### 🔧 Mejoras Técnicas
+
 
 #### Compilación y Calidad
 
