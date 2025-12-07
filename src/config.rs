@@ -3,7 +3,9 @@ use std::path::PathBuf;
 
 // Environment variables homologation
 pub const NVM_HOME_VAR: &str = "NVM_HOME";
+#[allow(dead_code)] // Reserved for future phases
 pub const NVM_BIN_VAR: &str = "NVM_BIN";
+#[allow(dead_code)] // Reserved for future phases
 pub const NVM_NODE_VAR: &str = "NVM_NODE";
 pub const NODE_MIRROR_VAR: &str = "NODE_MIRROR";
 
@@ -72,6 +74,7 @@ impl Config {
     }
 
     /// Returns the NVM_BIN directory: $NVM_HOME/bin (where nvm executable is located)
+    #[allow(dead_code)] // Reserved for future phases
     pub fn nvm_bin_dir(&self) -> PathBuf {
         self.nvm_dir.join("bin")
     }
