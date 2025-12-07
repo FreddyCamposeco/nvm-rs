@@ -1,6 +1,12 @@
 use anyhow::Result;
 use std::path::PathBuf;
 
+// Environment variables homologation
+pub const NVM_HOME_VAR: &str = "NVM_HOME";
+pub const NVM_BIN_VAR: &str = "NVM_BIN";
+pub const NVM_NODE_VAR: &str = "NVM_NODE";
+pub const NODE_MIRROR_VAR: &str = "NODE_MIRROR";
+
 #[derive(Debug, Clone)]
 pub struct Config {
     pub nvm_dir: PathBuf,
@@ -26,7 +32,7 @@ impl Config {
 
         Ok(Config {
             nvm_dir,
-            node_mirror: std::env::var("NODE_MIRROR")
+            node_mirror: std::env::var(NODE_MIRROR_VAR)
                 .unwrap_or_else(|_| "https://nodejs.org/dist".to_string()),
             arch,
             cache_duration_minutes: 15,
@@ -35,9 +41,9 @@ impl Config {
     }
 
     fn get_nvm_dir() -> Result<PathBuf> {
-        // Check NVM_DIR environment variable first
-        if let Ok(nvm_dir) = std::env::var("NVM_DIR") {
-            return Ok(PathBuf::from(nvm_dir));
+        // Check NVM_HOME environment variable first
+        if let Ok(nvm_home) = std::env::var(NVM_HOME_VAR) {
+            return Ok(PathBuf::from(nvm_home));
         }
 
         // Use platform-specific default
@@ -65,9 +71,22 @@ impl Config {
         self.nvm_dir.clone()
     }
 
+    /// Returns the NVM_BIN directory: $NVM_DIR/bin (where nvm executable is located)
+    pub fn nvm_bin_dir(&self) -> PathBuf {
+        self.nvm_dir.join("bin")
+    }
+
+    /// Returns the NVM_NODE directory: $NVM_DIR/current/bin (active Node binaries)
+    /// This is homologated across platforms:
+    /// - Windows: %NVM_DIR%\current\bin
+    /// - Unix:    $NVM_DIR/current/bin
+    pub fn nvm_node_dir(&self) -> PathBuf {
+        self.nvm_dir.join("current").join("bin")
+    }
+
     #[allow(dead_code)] // Will be used in Phase 4 (use command)
     pub fn current_dir(&self) -> PathBuf {
-        self.nvm_dir.join("current").join("bin")
+        self.nvm_node_dir()
     }
 
     #[allow(dead_code)] // Will be used in Phase 6 (alias command)
