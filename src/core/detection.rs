@@ -13,6 +13,7 @@ pub struct SystemNodeInfo {
     pub path: PathBuf,
     pub version: String,
     pub npm_version: Option<String>,
+    #[allow(dead_code)]
     pub source: DetectionSource,
 }
 
@@ -24,6 +25,7 @@ pub enum DetectionSource {
     /// Instalación del sistema (Program Files, /usr/local, etc.)
     SystemInstallation,
     /// NVM (no debería detectarse aquí, pero lo marcamos)
+    #[allow(dead_code)]
     NvmManaged,
 }
 
@@ -240,6 +242,7 @@ pub fn find_all_node_installations() -> Vec<SystemNodeInfo> {
 }
 
 /// Mostrar información del Node.js del sistema
+#[allow(dead_code)]
 pub fn display_system_node(info: &SystemNodeInfo) {
     println!(
         "\n{} System Node.js Installation Detected:\n",
@@ -256,6 +259,7 @@ pub fn display_system_node(info: &SystemNodeInfo) {
 }
 
 /// Mostrar todas las instalaciones encontradas
+#[allow(dead_code)]
 pub fn display_all_installations(installations: &[SystemNodeInfo]) {
     if installations.is_empty() {
         println!("\n{} No system Node.js installations found\n", "⚠".yellow());

@@ -225,6 +225,7 @@ pub fn install_binary(source: &Path, install_dir: &Path) -> Result<PathBuf> {
 }
 
 /// Desinstala nvm del sistema
+#[allow(dead_code)]
 pub fn uninstall_binary(install_dir: Option<&Path>) -> Result<()> {
     let install_dir = if let Some(dir) = install_dir {
         dir.to_path_buf()
@@ -496,6 +497,7 @@ pub fn set_nvm_home(nvm_dir: &Path) -> Result<()> {
 
 /// Elimina la variable de entorno NVM_HOME
 #[cfg(windows)]
+#[allow(dead_code)]
 pub fn remove_nvm_home() -> Result<()> {
     use std::ptr;
     use winapi::um::winuser::{
