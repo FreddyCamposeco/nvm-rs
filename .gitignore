@@ -23,6 +23,8 @@ test-nvm/
 # Test artifacts
 *.tmp
 *.temp
+test_out.txt
+test_output.txt
 
 # Release directory (binaries are published via GitHub Releases)
 /release/
