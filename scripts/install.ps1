@@ -173,7 +173,7 @@ $isNvmNodeInPath = $pathEntries -contains "$env:USERPROFILE\.nvm\current\bin"
 
 if ($isNvmBinInPath -and $isNvmNodeInPath) {
     Write-Success "✓ NVM_BIN y NVM_NODE ya están configurados en el PATH"
-else {
+} else {
     Write-Warning "⚠ Falta configurar el PATH completo"
 
     if (-not $NoPrompt) {
