@@ -73,16 +73,34 @@ if (-not $asset) {
     exit 1
 }
 
-# Crear directorio de instalación
-Write-Info "Directorio de instalación: $InstallDir"
-if (-not (Test-Path $InstallDir)) {
-    New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
-    Write-Success "✓ Directorio de instalación creado"
+# Crear estructura de directorios NVM primero
+Write-Info ""
+Write-Info "Configurando estructura de directorios..."
+$nvmHomeDir = "$env:USERPROFILE\.nvm"
+$nvmBinDir = "$nvmHomeDir\bin"
+$nvmNodeDir = "$nvmHomeDir\current\bin"
+
+try {
+    New-Item -ItemType Directory -Path $nvmHomeDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $nvmBinDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $nvmNodeDir -Force | Out-Null
+    Write-Success "✓ Directorios creados"
+} catch {
+    Write-Error "Error al crear directorios: $_"
+    exit 1
 }
 
-# Descargar binario
+# Descargar binario directamente a NVM_BIN
 $downloadUrl = $asset.browser_download_url
-$downloadPath = Join-Path $env:TEMP $assetName
+$exePath = Join-Path $nvmBinDir "nvm.exe"
+
+# Hacer backup si existe
+if (Test-Path $exePath) {
+    $backupPath = Join-Path $nvmBinDir "nvm.exe.bak"
+    Move-Item -Path $exePath -Destination $backupPath -Force
+    Write-Warning "⚠ Backup creado: nvm.exe.bak"
+}
+
 Write-Info ""
 Write-Info "Descargando $assetName..."
 Write-Info "URL: $downloadUrl"
@@ -97,7 +115,7 @@ try {
         Write-Progress -Activity "Descargando nvm-rs" -Status "$progress% completado" -PercentComplete $progress
     } | Out-Null
 
-    $webClient.DownloadFile($downloadUrl, $downloadPath)
+    $webClient.DownloadFile($downloadUrl, $exePath)
     $webClient.Dispose()
     Write-Progress -Activity "Descargando nvm-rs" -Completed
     Write-Success "✓ Descarga completada"
@@ -109,27 +127,9 @@ try {
 # Verificar checksum
 Write-Info ""
 Write-Info "Verificando integridad del archivo..."
-$hash = Get-FileHash -Path $downloadPath -Algorithm SHA256
+$hash = Get-FileHash -Path $exePath -Algorithm SHA256
 Write-Info "SHA256: $($hash.Hash)"
-
-# Instalar binario
-$exePath = Join-Path $InstallDir "nvm.exe"
-Write-Info ""
-Write-Info "Instalando binario..."
-
-# Hacer backup si existe
-if (Test-Path $exePath) {
-    $backupPath = Join-Path $InstallDir "nvm.exe.bak"
-    Move-Item -Path $exePath -Destination $backupPath -Force
-    Write-Warning "⚠ Backup creado: nvm.exe.bak"
-}
-
-# Copiar nuevo binario
-Copy-Item -Path $downloadPath -Destination $exePath -Force
 Write-Success "✓ Binario instalado en: $exePath"
-
-# Limpiar archivo temporal
-Remove-Item -Path $downloadPath -Force
 
 # Verificar que funciona
 Write-Info ""
@@ -146,24 +146,16 @@ Write-Info ""
 Write-Info "Configurando variables de entorno..."
 
 # 1. Configurar NVM_HOME (home directory)
-$currentNvmHome = [Environment]::GetEnvironmentVariable("NVM_HOME", "User")
-if ($currentNvmHome -and (Test-Path $currentNvmHome)) {
-    $nvmHomeDir = $currentNvmHome
-    Write-Info "Variable NVM_HOME ya existe: $nvmHomeDir"
-} else {
-    $nvmHomeDir = "$env:USERPROFILE\.nvm"
-    try {
-        [Environment]::SetEnvironmentVariable("NVM_HOME", $nvmHomeDir, "User")
-        $env:NVM_HOME = $nvmHomeDir
-        Write-Success "✓ Variable NVM_HOME establecida: $nvmHomeDir"
-    } catch {
-        Write-Warning "⚠ No se pudo establecer NVM_HOME: $_"
-    }
+try {
+    [Environment]::SetEnvironmentVariable("NVM_HOME", $nvmHomeDir, "User")
+    $env:NVM_HOME = $nvmHomeDir
+    Write-Success "✓ Variable NVM_HOME establecida: $nvmHomeDir"
+} catch {
+    Write-Warning "⚠ No se pudo establecer NVM_HOME: $_"
 }
 
 # 2. Configurar NVM_BIN (binario nvm)
 try {
-    $nvmBinDir = "$nvmHomeDir\bin"
     [Environment]::SetEnvironmentVariable("NVM_BIN", $nvmBinDir, "User")
     $env:NVM_BIN = $nvmBinDir
     Write-Success "✓ Variable NVM_BIN establecida: $nvmBinDir"
@@ -173,7 +165,6 @@ try {
 
 # 3. Configurar NVM_NODE (node activo)
 try {
-    $nvmNodeDir = "$nvmHomeDir\current\bin"
     [Environment]::SetEnvironmentVariable("NVM_NODE", $nvmNodeDir, "User")
     $env:NVM_NODE = $nvmNodeDir
     Write-Success "✓ Variable NVM_NODE establecida: $nvmNodeDir"
@@ -181,15 +172,8 @@ try {
     Write-Warning "⚠ No se pudo establecer NVM_NODE: $_"
 }
 
-# 4. Crear estructura de directorios y shims en NVM_BIN
+# 4. Crear shims en NVM_BIN
 try {
-    New-Item -ItemType Directory -Path $nvmHomeDir -Force | Out-Null
-    New-Item -ItemType Directory -Path $nvmBinDir -Force | Out-Null
-    New-Item -ItemType Directory -Path $nvmNodeDir -Force | Out-Null
-
-    # Copiar el binario a NVM_BIN también
-    Copy-Item -Path $exePath -Destination (Join-Path $nvmBinDir "nvm.exe") -Force
-
     # Crear shim CMD que apunta al binario en NVM_BIN
     $cmdShim = @'
 @echo off
@@ -207,9 +191,35 @@ try {
     Set-Content -Path $psShimPath -Value $psShim -Encoding ASCII
     Write-Success "✓ Creado shim PowerShell: $psShimPath"
 
-    Write-Success "✓ Directorios y shims creados en $nvmBinDir"
+    Write-Success "✓ Shims creados en $nvmBinDir"
 } catch {
-    Write-Warning "⚠ No se pudieron crear directorios/shims: $_"
+    Write-Warning "⚠ No se pudieron crear shims: $_"
+}
+
+# 5. Configurar alias en PowerShell profile
+try {
+    $profileDir = Split-Path $profile
+    if (-not (Test-Path $profileDir)) {
+        New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+    }
+
+    # Crear o actualizar profile con alias de nvm
+    $aliasLine = "Set-Alias -Name nvm -Value '$nvmBinDir\nvm.exe' -Force -Option AllScope"
+
+    if (Test-Path $profile) {
+        if ((Get-Content $profile) -notmatch "Set-Alias.*nvm") {
+            Add-Content $profile "`n$aliasLine"
+            Write-Success "✓ Alias nvm agregado al PowerShell profile"
+        }
+    } else {
+        Set-Content $profile $aliasLine
+        Write-Success "✓ PowerShell profile creado con alias nvm"
+    }
+
+    # Aplicar el alias en la sesión actual
+    Set-Alias -Name nvm -Value "$nvmBinDir\nvm.exe" -Force -Option AllScope
+} catch {
+    Write-Warning "⚠ No se pudo configurar el alias en PowerShell: $_"
 }
 
 # Verificar PATH
