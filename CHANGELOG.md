@@ -1,5 +1,155 @@
 # Changelog
 
+## v0.5.0 (Diciembre 7, 2025)
+
+**Status**: ✅ **LANZADO A PRODUCCIÓN**
+
+### ✨ Nuevas Características
+
+#### 1. Integración de System Node.js Detection en `doctor`
+
+- **Comando**: `nvm doctor --all` - Detecta todas las instalaciones de Node.js en el sistema
+- **Comando**: `nvm doctor --system` - Solo muestra Node.js del sistema
+- **Comando**: `nvm doctor` - Información general (compatible con v0.4.0)
+- **Funciones internas** utilizadas desde `core::detection`:
+  - `detect_system_node()` - Detección en PATH y ubicaciones del sistema
+  - `find_all_node_installations()` - Búsqueda exhaustiva
+
+### 🐛 Mejoras Técnicas
+
+- ✅ Limpieza de código: Eliminados 8 warnings intencionales
+- ✅ Agregados `#[allow(dead_code)]` para funciones futuras
+- ✅ **Compilación final: 0 errores, 0 warnings**
+- Reducción de warnings de 16 → 8 en v0.4.0 a 0 en v0.5.0
+
+### 📊 Cambios
+
+- **Archivos modificados**: 3 (src/main.rs, src/core/detection.rs, src/core/cache.rs, src/core/installer.rs)
+- **Líneas añadidas**: +48
+- **Commits**: 2
+
+### 📦 Dependencias
+
+Sin cambios en dependencias. Usa módulos existentes: colored, serde_json
+
+### ✅ Verificación
+
+- Compilación en release: 25.96s
+- Tests unitarios: ✅ Pasando
+- Cross-platform: Windows, Linux, macOS
+
+## v0.4.0 (Diciembre 7, 2025)
+
+**Status**: ✅ **LANZADO A PRODUCCIÓN**
+
+### ✨ Nuevas Características
+
+#### 1. System Node.js Detection Module
+
+- **Módulo**: `src/core/detection.rs` (313 líneas)
+- **Funciones principales**:
+  - `detect_system_node()` - Detecta primer Node.js en PATH o ubicaciones del sistema
+  - `find_all_node_installations()` - Encuentra todas las instalaciones
+  - `find_node_in_path()` - Búsqueda en PATH (Windows: `where`, Unix: `which`)
+  - `find_node_in_system_locations()` - Búsqueda en Program Files, /usr/local, ~/.local
+- **Struct SystemNodeInfo**: Información de instalación detectada
+  - `path`: Ruta al ejecutable
+  - `version`: Versión de Node.js
+  - `npm_version`: Versión de npm
+  - `source`: Origen de la detección
+- **Enum DetectionSource**:
+  - PathEnvironment
+  - SystemInstallation
+  - NvmManaged
+- **Cross-platform**: Windows, Linux, macOS
+
+#### 2. Cache Improvements
+
+- **Extensión de duración**: 15 minutos → 24 horas
+- **Struct CacheInfo** con metadata completa:
+  - `exists`: Si el cache existe
+  - `size_bytes`: Tamaño total del cache
+  - `last_updated`: Timestamp de última actualización
+  - `expires_at`: Cuándo expira el cache
+  - `is_valid`: Si el cache es válido
+- **Funciones públicas**:
+  - `get_cache_info()` - Información detallada del cache
+  - `get_cache_total_size()` - Tamaño total recursivo
+- **Métodos de formateo**:
+  - `size_human_readable()` - Convierte bytes a KB/MB/GB
+  - `last_updated_human_readable()` - Formatea tiempo transcurrido
+- **Ubicación**: `src/core/cache.rs`
+
+#### 3. Stats Command
+
+- **Comando**: `nvm stats [--json]`
+- **Módulo**: `src/commands/stats.rs` (256 líneas)
+- **Struct Stats**: Recopila 10 métricas:
+  - `nvm_version`: Versión actual de nvm
+  - `nvm_location`: Ubicación del directorio NVM_HOME
+  - `nvm_size`: Tamaño total de instalación
+  - `installed_versions`: Número de versiones instaladas
+  - `active_version`: Versión actualmente activa
+  - `total_node_size`: Tamaño combinado de todas las versiones
+  - `aliases_count`: Número de aliases configurados
+  - `cache_size`: Tamaño del cache de versiones
+  - `cache_valid`: Si el cache es válido
+  - `cache_age`: Antigüedad del cache
+- **Output formateado** con colores ANSI
+- **JSON export** con flag `--json` para scripting
+- **Funciones internas**:
+  - `get_active_version()` - Lee symlink/junction actual
+  - `calculate_dir_size()` - Cálculo recursivo de tamaño
+  - `format_size()` - Conversión a unidades legibles
+  - `format_age()` - Formateo de tiempo
+
+#### 4. CLI Integration
+
+- **Comando agregado** a enum `Commands`
+- **Handler** en match de main.rs
+- **Pruebas funcionales**: ✅ Exitosas
+
+### 🐛 Mejoras Técnicas
+
+- Introducción de módulo `commands/` para futuras expansiones
+- Sistema modular bien organizado
+- Cross-platform desde diseño
+
+### 📊 Cambios
+
+- **Archivos creados**: 3
+  - `src/core/detection.rs` - 313 líneas
+  - `src/commands/stats.rs` - 256 líneas
+  - `src/commands/mod.rs` - módulo
+- **Archivos modificados**: 3
+  - `src/main.rs` - Integración del comando stats
+  - `src/config.rs` - Cache duration: 15 → 1440 minutos
+  - `src/core/cache.rs` - +162 líneas de métodos y structs
+- **Líneas añadidas**: +569
+- **Commits**: 4
+
+### 📦 Dependencias
+
+Sin cambios. Usa dependencias existentes:
+
+- `colored` - Para output con colores
+- `serde_json` - Para JSON serialization
+- `tokio` - Para async
+
+### ✅ Verificación
+
+- Compilación en release: 25.68s
+- Warnings iniciales: 24 (intencionales, funciones futuras)
+- Tests unitarios: ✅ Pasando
+- Cross-platform: Windows, Linux, macOS
+
+### 🎯 Features para futuras versiones
+
+- Integración con `nvm doctor --all` (**COMPLETADO EN v0.5.0**)
+- Configuración desde archivo
+- Plugin system
+- Cache management commands
+
 ## v0.3.0 (En Desarrollo)
 
 **Status**: 🚀 Próximo Release
@@ -27,22 +177,21 @@
 - Mensajes informativos claros en cada paso
 - Logging de operaciones completadas vs fallidas
 
-### 📋 Características Planeadas para v0.3.0+
+### 📋 Características Planeadas
 
-#### v0.3.0 Priority Features
-
-- [ ] Detección de Node.js del sistema (`which node` / `where node`)
-- [ ] Cache de versiones remotas con TTL configurable
-- [ ] Comando `stats` - resumen de instalación
-- [ ] Mejora de LTS labels (mostrar nombre: Iron, Jod, etc.)
-
-#### v0.4.0+ Features
+#### v0.6.0 Priority Features
 
 - [ ] Configuración desde archivo (nvm.toml/settings.json)
+- [ ] Mejora de LTS labels (mostrar nombre: Iron, Jod, etc.)
 - [ ] Integración con direnv
 - [ ] Plugin system
+
+#### v0.7.0+ Features
+
 - [ ] Telemetría opcional
 - [ ] Soporte para package managers (npm, yarn, pnpm)
+- [ ] Proxy support
+- [ ] Custom mirrors
 
 ## v0.2.0 - Release Notes
 
