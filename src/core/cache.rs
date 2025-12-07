@@ -100,7 +100,6 @@ pub fn get_installed_versions(config: &Config) -> Result<Vec<String>> {
 #[allow(dead_code)] // Will be used in Phase 3 (stats command)
 pub fn get_cache_info(config: &Config) -> Result<CacheInfo> {
     let cache_file = config.cache_file();
-    let cache_dir = config.cache_file().parent().map(|p| p.to_path_buf());
 
     let mut info = CacheInfo {
         exists: cache_file.exists(),
@@ -108,9 +107,7 @@ pub fn get_cache_info(config: &Config) -> Result<CacheInfo> {
         last_updated: None,
         expires_at: None,
         is_valid: false,
-    };
-
-    if cache_file.exists() {
+    };    if cache_file.exists() {
         if let Ok(metadata) = fs::metadata(&cache_file) {
             info.size_bytes = metadata.len();
 
