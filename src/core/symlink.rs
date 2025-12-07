@@ -8,7 +8,7 @@ use junction::create as create_junction;
 use std::os::unix::fs as unix_fs;
 
 /// Crea o actualiza un symlink/junction apuntando a la versión de Node.js
-/// 
+///
 /// En Windows usa junctions (similar a symlinks pero no requiere permisos admin)
 /// En Unix usa symlinks estándar
 pub fn create_or_update_symlink(target: &Path, link: &Path) -> Result<()> {
@@ -16,13 +16,13 @@ pub fn create_or_update_symlink(target: &Path, link: &Path) -> Result<()> {
     if link.exists() || link.symlink_metadata().is_ok() {
         remove_symlink(link)?;
     }
-    
+
     // Crear el directorio padre si no existe
     if let Some(parent) = link.parent() {
         std::fs::create_dir_all(parent)
             .context("Failed to create parent directory for symlink")?;
     }
-    
+
     // Crear el symlink según la plataforma
     #[cfg(windows)]
     {
@@ -33,7 +33,7 @@ pub fn create_or_update_symlink(target: &Path, link: &Path) -> Result<()> {
                 target.display()
             ))?;
     }
-    
+
     #[cfg(unix)]
     {
         unix_fs::symlink(target, link)
@@ -43,8 +43,43 @@ pub fn create_or_update_symlink(target: &Path, link: &Path) -> Result<()> {
                 target.display()
             ))?;
     }
-    
+
     Ok(())
+}
+
+/// Persiste la versión actual en un archivo .nvm-version para recuperación confiable
+pub fn persist_current_version(link: &Path, version: &str) -> Result<()> {
+    // Crear directorio 'current' si no existe
+    if let Some(parent) = link.parent() {
+        std::fs::create_dir_all(parent)
+            .context("Failed to create current directory")?;
+    }
+
+    let version_file = link.join(".nvm-version");
+    std::fs::write(&version_file, version)
+        .context(format!("Failed to persist version to {}", version_file.display()))?;
+
+    Ok(())
+}
+
+/// Lee la versión persistida desde archivo .nvm-version
+#[allow(dead_code)] // Will be used in Phase 2 (version detection improvements)
+pub fn read_persisted_version(link: &Path) -> Result<Option<String>> {
+    let version_file = link.join(".nvm-version");
+
+    if !version_file.exists() {
+        return Ok(None);
+    }
+
+    let content = std::fs::read_to_string(&version_file)
+        .context(format!("Failed to read persisted version from {}", version_file.display()))?;
+
+    let version = content.trim().to_string();
+    if version.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(version))
+    }
 }
 
 /// Elimina un symlink/junction existente
@@ -53,7 +88,7 @@ pub fn remove_symlink(link: &Path) -> Result<()> {
         // El link no existe, no hay nada que hacer
         return Ok(());
     }
-    
+
     #[cfg(windows)]
     {
         // En Windows, usar remove_dir para junctions
@@ -65,14 +100,14 @@ pub fn remove_symlink(link: &Path) -> Result<()> {
                 .context(format!("Failed to remove symlink: {}", link.display()))?;
         }
     }
-    
+
     #[cfg(unix)]
     {
         // En Unix, remove_file funciona para symlinks
         std::fs::remove_file(link)
             .context(format!("Failed to remove symlink: {}", link.display()))?;
     }
-    
+
     Ok(())
 }
 
@@ -100,7 +135,7 @@ pub fn read_symlink_target(link: &Path) -> Result<std::path::PathBuf> {
             })
             .context(format!("Failed to read symlink target: {}", link.display()))
     }
-    
+
     #[cfg(unix)]
     {
         std::fs::read_link(link)
@@ -119,31 +154,31 @@ mod tests {
         let temp = TempDir::new().unwrap();
         let target = temp.path().join("target");
         let link = temp.path().join("link");
-        
+
         // Crear directorio target
         fs::create_dir(&target).unwrap();
         fs::write(target.join("test.txt"), b"test").unwrap();
-        
+
         // Crear symlink
         let result = create_or_update_symlink(&target, &link);
         assert!(result.is_ok(), "Should create symlink: {:?}", result.err());
-        
+
         #[cfg(windows)]
         assert!(link.exists(), "Link should exist on Windows");
-        
+
         #[cfg(unix)]
         {
             assert!(link.symlink_metadata().is_ok(), "Link metadata should be readable");
             assert!(link.exists(), "Link should exist");
         }
-        
+
         // Verificar que es válido
         assert!(is_valid_symlink(&link), "Symlink should be valid");
-        
+
         // Verificar que podemos leer a través del symlink
         let content = fs::read_to_string(link.join("test.txt")).unwrap();
         assert_eq!(content, "test");
-        
+
         // Eliminar symlink
         let result = remove_symlink(&link);
         assert!(result.is_ok(), "Should remove symlink");
@@ -156,18 +191,18 @@ mod tests {
         let target1 = temp.path().join("target1");
         let target2 = temp.path().join("target2");
         let link = temp.path().join("link");
-        
+
         // Crear directorios target
         fs::create_dir(&target1).unwrap();
         fs::create_dir(&target2).unwrap();
         fs::write(target1.join("version.txt"), b"1").unwrap();
         fs::write(target2.join("version.txt"), b"2").unwrap();
-        
+
         // Crear primer symlink
         create_or_update_symlink(&target1, &link).unwrap();
         let content = fs::read_to_string(link.join("version.txt")).unwrap();
         assert_eq!(content, "1");
-        
+
         // Actualizar a target2
         create_or_update_symlink(&target2, &link).unwrap();
         let content = fs::read_to_string(link.join("version.txt")).unwrap();
@@ -179,20 +214,20 @@ mod tests {
         let temp = TempDir::new().unwrap();
         let target = temp.path().join("target");
         let link = temp.path().join("link");
-        
+
         // Sin crear, no es válido
         assert!(!is_valid_symlink(&link));
-        
+
         // Crear target y symlink
         fs::create_dir(&target).unwrap();
         create_or_update_symlink(&target, &link).unwrap();
-        
+
         // Ahora es válido
         assert!(is_valid_symlink(&link));
-        
+
         // Eliminar target (romper el symlink)
         fs::remove_dir(&target).unwrap();
-        
+
         // Ya no es válido (broken symlink)
         #[cfg(unix)]
         assert!(!is_valid_symlink(&link));

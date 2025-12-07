@@ -303,6 +303,10 @@ async fn main() -> Result<()> {
             symlink::create_or_update_symlink(&symlink_target, &current_link)
                 .context("Failed to create symlink")?;
 
+            // Persistir la versión en .nvm-version para recuperación confiable
+            symlink::persist_current_version(&current_link, &resolved_version)
+                .context("Failed to persist current version")?;
+
             println!("\n✓ {}", t!("now_using_node").replace("{}", &resolved_version));
 
             // Mostrar información adicional
