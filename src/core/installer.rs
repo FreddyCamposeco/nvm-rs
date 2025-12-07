@@ -533,6 +533,114 @@ pub fn remove_nvm_home() -> Result<()> {
     Ok(())
 }
 
+/// Limpieza completa de instalación - elimina TODOS los rastros de nvm
+/// Incluye: binario, variables de entorno, PATH, directorios de datos
+#[cfg(windows)]
+pub fn full_uninstall_cleanup(install_dir: Option<&Path>, data_dir: Option<&Path>) -> Result<()> {
+    use std::ptr;
+    use winapi::um::winuser::{
+        SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE,
+    };
+
+    println!("🔄 Desinstalando nvm...");
+
+    // 1. Eliminar binario
+    let install_dir = if let Some(d) = install_dir {
+        d.to_path_buf()
+    } else {
+        get_install_dir()?
+    };
+
+    let exe_path = install_dir.join("nvm.exe");
+    if exe_path.exists() {
+        fs::remove_file(&exe_path).context("Failed to remove nvm.exe")?;
+        println!("✓ Binario nvm.exe eliminado");
+    }
+
+    // 2. Eliminar del PATH (NVM_BIN)
+    if let Err(e) = remove_from_path(&install_dir) {
+        eprintln!("⚠ No se pudo remover NVM_BIN del PATH: {}", e);
+    } else {
+        println!("✓ NVM_BIN removido del PATH");
+    }
+
+    // 3. Eliminar del PATH (NVM_NODE/bin si existe)
+    if let Some(data_d) = data_dir {
+        let node_bin = data_d.join("current").join("bin");
+        if node_bin.exists() {
+            if let Err(e) = remove_from_path(&node_bin) {
+                eprintln!("⚠ No se pudo remover Node bin del PATH: {}", e);
+            } else {
+                println!("✓ Node bin removido del PATH: {}", node_bin.display());
+            }
+        }
+    }
+
+    // 4. Eliminar todas las variables de entorno
+    let env_vars = vec!["NVM_HOME", "NVM_BIN", "NVM_NODE", "NODE_MIRROR"];
+    for var in env_vars {
+        let cmd = format!(
+            "[Environment]::SetEnvironmentVariable('{}', $null, 'User')",
+            var
+        );
+        let status = std::process::Command::new("powershell")
+            .args(&["-NoProfile", "-Command", &cmd])
+            .status()
+            .context(format!("Failed to remove {}", var))?;
+
+        if status.success() {
+            println!("✓ Variable {} eliminada", var);
+        } else {
+            eprintln!("⚠ No se pudo eliminar variable {}", var);
+        }
+    }
+
+    // 5. Notificar al sistema del cambio de variables
+    unsafe {
+        let param = "Environment\0".encode_utf16().collect::<Vec<u16>>();
+        SendMessageTimeoutW(
+            HWND_BROADCAST,
+            WM_SETTINGCHANGE,
+            0,
+            param.as_ptr() as isize,
+            SMTO_ABORTIFHUNG,
+            5000,
+            ptr::null_mut(),
+        );
+    }
+
+    // 6. Eliminar directorio de datos (opcional - preguntar primero)
+    if let Some(data_d) = data_dir {
+        if data_d.exists() {
+            match fs::remove_dir_all(data_d) {
+                Ok(_) => println!("✓ Directorio de datos eliminado: {}", data_d.display()),
+                Err(e) => eprintln!("⚠ No se pudo eliminar directorio {}: {}", data_d.display(), e),
+            }
+        }
+    }
+
+    println!("\n✅ nvm ha sido completamente desinstalado");
+    println!("💡 Reinicia tu terminal para aplicar todos los cambios");
+
+    Ok(())
+}
+
+// Unix versions (stub implementations for non-Windows)
+#[cfg(not(windows))]
+pub fn full_uninstall_cleanup(install_dir: Option<&Path>, _data_dir: Option<&Path>) -> Result<()> {
+    // En Unix, la limpieza es más simple
+    if let Some(d) = install_dir {
+        let exe_path = d.join("nvm");
+        if exe_path.exists() {
+            fs::remove_file(&exe_path).context("Failed to remove nvm")?;
+            println!("✓ nvm binary removed");
+        }
+    }
+    println!("✅ nvm uninstalled");
+    println!("💡 Please remove nvm entries from your shell configuration files (~/.bashrc, ~/.zshrc, etc.)");
+    Ok(())
+}
+
 // Unix versions (stub implementations for non-Windows)
 #[cfg(not(windows))]
 pub fn add_to_path(_install_dir: &Path) -> Result<()> {
