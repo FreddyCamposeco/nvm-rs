@@ -301,12 +301,13 @@ pub fn get_path_instructions(install_dir: &Path) -> String {
         format!(
             r#"Para agregar nvm al PATH permanentemente:
 1. Agregar al final de {}:
-   export NVM_DIR="{}"
-   export PATH="{}:$NVM_DIR/current/bin:$PATH"
+   export NVM_HOME="{}"
+   export NVM_BIN="$NVM_HOME/bin"
+   export NVM_NODE="$NVM_HOME/current/bin"
+   export PATH="$NVM_BIN:$NVM_NODE:$PATH"
 2. Recargar la configuración: source {}"#,
             shell_config,
             nvm_dir.display(),
-            install_dir.display(),
             shell_config
         )
     }
@@ -449,9 +450,9 @@ pub fn remove_from_path(install_dir: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Establece la variable de entorno NVM_DIR
+/// Establece la variable de entorno NVM_HOME
 #[cfg(windows)]
-pub fn set_nvm_dir(nvm_dir: &Path) -> Result<()> {
+pub fn set_nvm_home(nvm_dir: &Path) -> Result<()> {
     use std::ptr;
     use winapi::um::winuser::{
         SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE,
@@ -459,18 +460,18 @@ pub fn set_nvm_dir(nvm_dir: &Path) -> Result<()> {
 
     let nvm_dir_str = nvm_dir.to_string_lossy();
 
-    // Establecer NVM_DIR
+    // Establecer NVM_HOME
     let status = std::process::Command::new("powershell")
         .args(&[
             "-NoProfile",
             "-Command",
             &format!(
-                "[Environment]::SetEnvironmentVariable('NVM_DIR', '{}', 'User')",
+                "[Environment]::SetEnvironmentVariable('NVM_HOME', '{}', 'User')",
                 nvm_dir_str
             ),
         ])
         .status()
-        .context("Failed to set NVM_DIR")?;
+        .context("Failed to set NVM_HOME")?;
 
     if !status.success() {
         anyhow::bail!("Failed to set NVM_DIR environment variable");
@@ -493,26 +494,26 @@ pub fn set_nvm_dir(nvm_dir: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Elimina la variable de entorno NVM_DIR
+/// Elimina la variable de entorno NVM_HOME
 #[cfg(windows)]
-pub fn remove_nvm_dir() -> Result<()> {
+pub fn remove_nvm_home() -> Result<()> {
     use std::ptr;
     use winapi::um::winuser::{
         SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE,
     };
 
-    // Eliminar NVM_DIR
+    // Eliminar NVM_HOME
     let status = std::process::Command::new("powershell")
         .args(&[
             "-NoProfile",
             "-Command",
-            "[Environment]::SetEnvironmentVariable('NVM_DIR', $null, 'User')",
+            "[Environment]::SetEnvironmentVariable('NVM_HOME', $null, 'User')",
         ])
         .status()
-        .context("Failed to remove NVM_DIR")?;
+        .context("Failed to remove NVM_HOME")?;
 
     if !status.success() {
-        anyhow::bail!("Failed to remove NVM_DIR environment variable");
+        anyhow::bail!("Failed to remove NVM_HOME environment variable");
     }
 
     // Notificar al sistema del cambio

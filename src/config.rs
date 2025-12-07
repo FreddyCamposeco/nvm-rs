@@ -71,15 +71,15 @@ impl Config {
         self.nvm_dir.clone()
     }
 
-    /// Returns the NVM_BIN directory: $NVM_DIR/bin (where nvm executable is located)
+    /// Returns the NVM_BIN directory: $NVM_HOME/bin (where nvm executable is located)
     pub fn nvm_bin_dir(&self) -> PathBuf {
         self.nvm_dir.join("bin")
     }
 
-    /// Returns the NVM_NODE directory: $NVM_DIR/current/bin (active Node binaries)
+    /// Returns the NVM_NODE directory: $NVM_HOME/current/bin (active Node binaries)
     /// This is homologated across platforms:
-    /// - Windows: %NVM_DIR%\current\bin
-    /// - Unix:    $NVM_DIR/current/bin
+    /// - Windows: %NVM_HOME%\current\bin
+    /// - Unix:    $NVM_HOME/current/bin
     pub fn nvm_node_dir(&self) -> PathBuf {
         self.nvm_dir.join("current").join("bin")
     }
