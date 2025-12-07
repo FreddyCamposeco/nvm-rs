@@ -1,6 +1,6 @@
 # nvm-rs
 
-🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma (v0.2.0)
+🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma (v0.5.0)
 
 [![Version](https://img.shields.io/github/v/release/FreddyCamposeco/nvm-rs?label=version)](https://github.com/FreddyCamposeco/nvm-rs/releases/latest) [![Rust](https://img.shields.io/badge/rust-1.91%2B-orange.svg)](https://www.rust-lang.org) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)]() [![Downloads](https://img.shields.io/github/downloads/FreddyCamposeco/nvm-rs/total)](https://github.com/FreddyCamposeco/nvm-rs/releases)
 
@@ -18,7 +18,7 @@
 
 ## 🚀 Estado del Proyecto
 
-**Versión**: 0.2.0
+**Versión**: 0.5.0
 **Estado**: ✅ Producción - Totalmente Funcional
 **Plataformas**: Windows, Linux, macOS (x64 y ARM64)
 
@@ -29,13 +29,15 @@
 - 🔍 **Búsqueda Inteligente**: Filtra versiones remotas por LTS, versión, código
 - ✅ **Seguro**: Verificación de integridad con checksums SHA256
 - 🔗 **Symlinks Inteligentes**: Junctions en Windows, symlinks en Unix (sin permisos admin)
-- 📦 **Cache Eficiente**: Sistema de caché con expiración automática
+- 📦 **Cache Eficiente**: Sistema de caché con expiración de 24 horas
 - 🏷️ **Sistema de Aliases**: Crea alias personalizados (default, stable, etc.)
 - 🧹 **Auto-Limpieza**: Elimina versiones antiguas manteniendo LTS y versión activa
 - 🔄 **Auto-Instalación**: Instala, actualiza y desinstala nvm desde GitHub Releases
 - 🌍 **Multiidioma**: Interfaz completa en Español e Inglés
 - 📄 **`.nvmrc` Support**: Detección automática en árbol de directorios
 - 🎯 **PATH Homologado**: Estructura consistente entre Windows, Linux y macOS
+- 🔎 **Detección de Sistema**: Detecta instalaciones de Node.js del sistema
+- 📊 **Estadísticas**: Comando `stats` para ver información de instalación
 
 ## 📦 Instalación Rápida
 
@@ -77,7 +79,7 @@ curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts
 ```bash
 # Instalar/actualizar usando nvm (si ya lo tienes instalado)
 nvm install-self                 # Instalar última versión
-nvm install-self -v v0.2.0      # Instalar versión específica
+nvm install-self -v v0.5.0      # Instalar versión específica
 nvm update-self                  # Actualizar a la última versión
 nvm uninstall-self              # Desinstalar nvm del sistema
 ```
@@ -156,6 +158,18 @@ nvm cleanup --yes
 
 # Diagnóstico del sistema
 nvm doctor
+
+# Detectar Node.js del sistema
+nvm doctor --system
+
+# Ver todas las instalaciones de Node.js
+nvm doctor --all
+
+# Ver estadísticas de instalación
+nvm stats
+
+# Ver estadísticas en formato JSON
+nvm stats --json
 ```
 
 ### Configuración y Utilidades
@@ -340,9 +354,9 @@ export PATH="$NVM_BIN:$NVM_NODE:$PATH"
 
 | Métrica | Valor |
 |---------|-------|
-| **Líneas de Código** | ~4,000 |
-| **Módulos** | 14 |
-| **Comandos** | 15 |
+| **Líneas de Código** | ~4,625 |
+| **Módulos** | 17 |
+| **Comandos** | 17 |
 | **Idiomas** | 2 (Español, Inglés) |
 | **Plataformas** | 6 (Windows x64/x86, Linux x64/ARM64, macOS x64/ARM64) |
 | **Dependencias** | ~15 principales |
@@ -374,6 +388,9 @@ export PATH="$NVM_BIN:$NVM_NODE:$PATH"
 |---------|-------------|
 | `nvm cleanup [--yes]` | Limpiar versiones no usadas (mantiene LTS y actual) |
 | `nvm doctor` | Diagnóstico del sistema y configuración |
+| `nvm doctor --system` | Detectar Node.js instalado en el sistema |
+| `nvm doctor --all` | Ver todas las instalaciones de Node.js encontradas |
+| `nvm stats [--json]` | Mostrar estadísticas de instalación |
 
 ### Gestión de nvm
 
@@ -428,6 +445,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - 📖 [Guía Completa de Instalación](INSTALLATION.md) - Métodos de instalación detallados
 - 🗺️ [Estructura de Directorios y PATH](PATH_STRUCTURE.md) - Arquitectura homologada multiplataforma
 - 📝 [Changelog](CHANGELOG.md) - Historial de cambios y versiones
+- 📋 [Información de Versiones](VERSION.md) - Versiones y plataformas soportadas
 - 🤝 [Guía de Contribución](CONTRIBUTING.md) - Cómo contribuir al proyecto
 - 🔄 [Plan de Migración](MIGRATION_PLAN.md) - Roadmap y fases completadas
 
