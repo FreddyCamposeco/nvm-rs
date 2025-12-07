@@ -132,6 +132,13 @@ enum Commands {
         #[arg(long)]
         with_self_update: bool,
     },
+
+    /// Show installation statistics
+    Stats {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[tokio::main]
@@ -904,6 +911,15 @@ async fn main() -> Result<()> {
             println!("\n✓ {}", t!("update_self_complete")
                 .replace("{version}", &release.tag_name));
             println!("\n{}", t!("restart_required"));
+        }
+
+        Commands::Stats { json } => {
+            let stats = commands::stats::get_stats(&config).await?;
+            if json {
+                commands::stats::display_stats_json(&stats)?;
+            } else {
+                commands::stats::display_stats(&stats);
+            }
         }
     }
 
