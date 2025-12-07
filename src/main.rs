@@ -7,6 +7,7 @@ mod config;
 mod core;
 mod i18n;
 mod utils;
+mod commands;
 
 use config::Config;
 use i18n::{set_locale, Locale};
