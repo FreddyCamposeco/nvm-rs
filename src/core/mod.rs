@@ -5,5 +5,6 @@ pub mod extract;
 pub mod symlink;
 pub mod aliases;
 pub mod installer;
+pub mod detection;
 
 pub use cache::*;
