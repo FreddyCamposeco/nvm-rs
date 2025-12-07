@@ -74,6 +74,10 @@ enum Commands {
     /// List all aliases
     Aliases,
 
+    /// Enable symlink support (Windows only - requires admin rights)
+    #[cfg(windows)]
+    EnableSymlinks,
+
     /// Verify installation and system info
     Doctor {
         /// Show all Node.js installations found in the system
@@ -534,6 +538,67 @@ async fn main() -> Result<()> {
             println!();
         }
 
+        #[cfg(windows)]
+        Commands::EnableSymlinks => {
+            use std::process::Command;
+            use utils::{print_success, print_warning};
+
+            println!("\n{}", t!("enable_symlinks_title"));
+            println!("{}", "=".repeat(50));
+            println!();
+
+            // Verificar si se ejecuta como administrador
+            let output = if let Ok(output) = Command::new("net")
+                .args(&["session"])
+                .output() {
+                output.status.success()
+            } else {
+                false
+            };
+
+            if !output {
+                print_warning("Este comando requiere permisos de administrador");
+                println!();
+                println!("Para ejecutar como administrador:");
+                println!("  1. Click derecho en PowerShell");
+                println!("  2. Selecciona 'Ejecutar como administrador'");
+                println!("  3. Ejecuta: nvm enable-symlinks");
+                println!();
+                return Ok(());
+            }
+
+            // Intentar habilitar Developer Mode
+            println!("Intentando habilitar soporte de symlinks...");
+            println!();
+
+            let dev_mode_key = "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock";
+            let result = Command::new("reg")
+                .args(&["add", dev_mode_key, "/v", "AllowDevelopmentWithoutDevLicense", "/t", "REG_DWORD", "/d", "1", "/f"])
+                .output();
+
+            match result {
+                Ok(output) if output.status.success() => {
+                    print_success("✓ Symlink support habilitado");
+                    println!();
+                    println!("Cambios aplicados:");
+                    println!("  • Developer Mode habilitado en el registro");
+                    println!();
+                    println!("Próximos pasos:");
+                    println!("  1. Reinicia tu PC para aplicar los cambios");
+                    println!("  2. Ejecuta 'nvm doctor' para verificar");
+                    println!();
+                }
+                _ => {
+                    print_warning("No se pudo habilitar automáticamente");
+                    println!();
+                    println!("Habilita manualmente:");
+                    println!("  1. Configuración > Actualización y seguridad");
+                    println!("  2. Para desarrolladores");
+                    println!("  3. Activa 'Modo de desarrollador'");
+                    println!();
+                }
+            }
+        }
 
         Commands::Doctor { all, system } => {
             if all || system {
@@ -997,13 +1062,42 @@ fn show_doctor_info(config: &Config) -> Result<()> {
 
     // Check symlink support
     print!("{} ", t!("doctor_symlink_support"));
+
     #[cfg(unix)]
-    print_success("Supported");
+    {
+        print_success("Supported");
+    }
 
     #[cfg(windows)]
     {
-        // On Windows, it depends on permissions
-        print_warning("Check required (admin rights may be needed)");
+        // Test actual junction/symlink creation on Windows
+        let test_dir = config.nvm_dir.join(".symlink-test");
+        let test_target = test_dir.join("target");
+        let test_link = test_dir.join("link");
+
+        let symlink_works = if let Ok(_) = std::fs::create_dir_all(&test_target) {
+            use junction::create as create_junction;
+            match create_junction(&test_target, &test_link) {
+                Ok(_) => {
+                    // Clean up
+                    let _ = std::fs::remove_dir(&test_link);
+                    let _ = std::fs::remove_dir(&test_target);
+                    let _ = std::fs::remove_dir(&test_dir);
+                    true
+                }
+                Err(_) => false,
+            }
+        } else {
+            false
+        };
+
+        if symlink_works {
+            print_success("Supported");
+        } else {
+            print_warning("Check required (admin rights may be needed)");
+            println!("\n  {} To enable: Run Windows as Administrator", t!("note"));
+            println!("  {} Or enable Developer Mode for non-admin symlink creation", t!("note"));
+        }
     }
 
     println!();

@@ -126,5 +126,5 @@ uninstall_self_removing_env : "Removing environment variables..."
 uninstall_self_path_removed : "Directory removed from PATH"
 uninstall_self_nvm_dir_removed : "NVM_DIR variable removed"
 uninstall_self_env_warning : "⚠ Warning removing variables: {error}"
-
-
+enable_symlinks_title    : "Enable Symlink Support"
+note                     : "📝"
