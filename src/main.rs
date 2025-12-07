@@ -300,7 +300,7 @@ async fn main() -> Result<()> {
             #[cfg(not(windows))]
             let symlink_target = version_dir.join("bin");
 
-            symlink::create_or_update_symlink(&symlink_target, &current_link)
+            symlink::create_or_update_symlink(symlink_target, &current_link)
                 .context("Failed to create symlink")?;
 
             // Persistir la versión en .nvm-version para recuperación confiable
@@ -587,8 +587,8 @@ async fn main() -> Result<()> {
 
             println!("\n{}", t!("cleanup_keeping"));
             if let Some(ref current) = current_version {
-                println!("  {} {}", t!("cleanup_current_version")
-                    .replace("{version}", current), "");
+                println!("  {} ", t!("cleanup_current_version")
+                    .replace("{version}", current));
             }
             let lts_count = versions_to_keep.iter()
                 .filter(|v| {
