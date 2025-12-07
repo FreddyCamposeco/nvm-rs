@@ -584,7 +584,7 @@ pub fn full_uninstall_cleanup(install_dir: Option<&Path>, data_dir: Option<&Path
             var
         );
         let status = std::process::Command::new("powershell")
-            .args(&["-NoProfile", "-Command", &cmd])
+            .args(["-NoProfile", "-Command", &cmd])
             .status()
             .context(format!("Failed to remove {}", var))?;
 
