@@ -43,14 +43,31 @@ try {
 }
 
 # Determinar nombre del asset
-$suffix = if ($WithSelfUpdate) { "-self-update" } else { "" }
-$assetName = "nvm-$releaseVersion-windows-$arch$suffix.exe"
-Write-Info "Asset a descargar: $assetName"
+# Intentar primero con el nombre específico, luego con genérico
+$suffixList = @(
+    if ($WithSelfUpdate) { "-self-update" } else { "" }
+)
 
-# Buscar el asset en la release
-$asset = $release.assets | Where-Object { $_.name -eq $assetName }
+# Crear lista de nombres a buscar (en orden de preferencia)
+$assetNames = @(
+    "nvm-$releaseVersion-windows-$arch-self-update.exe",
+    "nvm-$releaseVersion-windows-$arch.exe",
+    "nvm-v$releaseVersion-windows-$arch.exe",
+    "nvm.exe"
+) | Where-Object { -not ($WithSelfUpdate -and -not $_.Contains("-self-update")) }
+
+$asset = $null
+foreach ($name in $assetNames) {
+    $asset = $release.assets | Where-Object { $_.name -eq $name } | Select-Object -First 1
+    if ($asset) {
+        $assetName = $name
+        Write-Info "Asset a descargar: $assetName"
+        break
+    }
+}
+
 if (-not $asset) {
-    Write-Error "Asset $assetName no encontrado en la release"
+    Write-Error "No se encontró un asset compatible en la release"
     Write-Info "Assets disponibles:"
     $release.assets | ForEach-Object { Write-Info "  - $($_.name)" }
     exit 1
