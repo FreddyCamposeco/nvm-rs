@@ -28,3 +28,4 @@ test_output.txt
 
 # Release directory (binaries are published via GitHub Releases)
 /release/
+/_docs/
