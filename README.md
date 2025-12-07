@@ -1,6 +1,6 @@
 # nvm-rs
 
-🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma
+🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma (v0.2.0)
 
 [![Version](https://img.shields.io/github/v/release/FreddyCamposeco/nvm-rs?label=version)](https://github.com/FreddyCamposeco/nvm-rs/releases/latest) [![Rust](https://img.shields.io/badge/rust-1.91%2B-orange.svg)](https://www.rust-lang.org) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)]() [![Downloads](https://img.shields.io/github/downloads/FreddyCamposeco/nvm-rs/total)](https://github.com/FreddyCamposeco/nvm-rs/releases)
 
@@ -18,7 +18,7 @@
 
 ## 🚀 Estado del Proyecto
 
-**Versión**: 0.1.0
+**Versión**: 0.2.0
 **Estado**: ✅ Producción - Totalmente Funcional
 **Plataformas**: Windows, Linux, macOS (x64 y ARM64)
 
