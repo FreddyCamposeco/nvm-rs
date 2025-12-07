@@ -1,0 +1,16 @@
+[31;1m   Compiling thiserror v1.0.69[0m
+[31;1m   Compiling zstd-sys v2.0.16+zstd.1.5.7[0m
+[31;1m   Compiling zstd-safe v5.0.2+zstd.1.5.2[0m
+[31;1m   Compiling directories v5.0.1[0m
+[31;1m   Compiling dirs v5.0.1[0m
+[31;1m   Compiling h2 v0.3.27[0m
+[31;1m   Compiling bzip2 v0.4.4[0m
+[31;1merror: linking with `link.exe` failed: exit code: 1104[0m
+[31;1m  |[0m
+[31;1m  = note: "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\link.exe" "/NOLOGO" "C:\\Users\\Freddy\\AppData\\Local\\Temp\\rustchUahg8\\symbols.o" "<3 object files omitted>" "<sysroot>\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib/{libstd-*,libpanic_unwind-*,libcfg_if-*,libwindows_targets-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libunwind-*,librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "kernel32.lib" "kernel32.lib" "kernel32.lib" "ntdll.lib" "userenv.lib" "ws2_32.lib" "dbghelp.lib" "/defaultlib:msvcrt" "/NXCOMPAT" "/OUT:D:\\Elementum\\repo\\nvm-rs\\target\\debug\\build\\thiserror-ba476b0c7fbe02f3\\build_script_build-ba476b0c7fbe02f3.exe" "/OPT:REF,NOICF" "/DEBUG" "/PDBALTPATH:%_PDB%" "/NATVIS:<sysroot>\\lib\\rustlib\\etc\\intrinsic.natvis" "/NATVIS:<sysroot>\\lib\\rustlib\\etc\\liballoc.natvis" "/NATVIS:<sysroot>\\lib\\rustlib\\etc\\libcore.natvis" "/NATVIS:<sysroot>\\lib\\rustlib\\etc\\libstd.natvis"[0m
+[31;1m  = note: some arguments are omitted. use `--verbose` to show all linker arguments[0m
+[31;1m  = note: LINK : fatal error LNK1104: no se puede abrir el archivo 'D:\Elementum\repo\nvm-rs\target\debug\build\thiserror-ba476b0c7fbe02f3\build_script_build-ba476b0c7fbe02f3.exe'␍[0m
+[31;1m          [0m
+[31;1m[0m
+[31;1merror: could not compile `thiserror` (build script) due to 1 previous error[0m
+[31;1mwarning: build failed, waiting for other jobs to finish...[0m

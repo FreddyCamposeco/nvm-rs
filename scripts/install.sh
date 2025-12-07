@@ -158,29 +158,42 @@ else
     SHELL_RC="$HOME/.profile"
 fi
 
-# 1. Configurar NVM_DIR
-NVM_DATA_DIR="$HOME/.nvm"
-if grep -q "export NVM_DIR=" "$SHELL_RC" 2>/dev/null; then
-    info "Variable NVM_DIR ya configurada en $SHELL_RC"
+# 1. Configurar NVM_HOME (home directory)
+NVM_HOME_DIR="$HOME/.nvm"
+if grep -q "export NVM_HOME=" "$SHELL_RC" 2>/dev/null; then
+    info "Variable NVM_HOME ya configurada en $SHELL_RC"
 else
     echo "" >> "$SHELL_RC"
-    echo "# nvm-rs configuration" >> "$SHELL_RC"
-    echo "export NVM_DIR=\"$NVM_DATA_DIR\"" >> "$SHELL_RC"
-    success "✓ Variable NVM_DIR agregada a $SHELL_RC"
+    echo "# nvm-rs configuration (homologated)" >> "$SHELL_RC"
+    echo "export NVM_HOME=\"$NVM_HOME_DIR\"" >> "$SHELL_RC"
+    success "✓ Variable NVM_HOME agregada a $SHELL_RC"
+fi
+
+# 2. Configurar NVM_BIN
+if ! grep -q "export NVM_BIN=" "$SHELL_RC" 2>/dev/null; then
+    echo "export NVM_BIN=\"\$NVM_HOME/bin\"" >> "$SHELL_RC"
+    success "✓ Variable NVM_BIN agregada a $SHELL_RC"
+fi
+
+# 3. Configurar NVM_NODE
+if ! grep -q "export NVM_NODE=" "$SHELL_RC" 2>/dev/null; then
+    echo "export NVM_NODE=\"\$NVM_HOME/current/bin\"" >> "$SHELL_RC"
+    success "✓ Variable NVM_NODE agregada a $SHELL_RC"
 fi
 
 # Verificar PATH
 info ""
 info "Verificando configuración del PATH..."
-CURRENT_BIN="$NVM_DATA_DIR/current/bin"
+CURRENT_BIN="$NVM_HOME_DIR/current/bin"
+NVM_BIN_PATH="$NVM_HOME_DIR/bin"
 PATH_CONFIGURED=false
 
-if echo "$PATH" | grep -q "$INSTALL_DIR" && echo "$PATH" | grep -q "$CURRENT_BIN"; then
-    success "✓ El directorio de instalación y versión activa ya están en el PATH"
+if echo "$PATH" | grep -q "$NVM_BIN_PATH" && echo "$PATH" | grep -q "$CURRENT_BIN"; then
+    success "✓ NVM_BIN y NVM_NODE ya están configurados en el PATH"
     PATH_CONFIGURED=true
 else
-    warning "⚠ Falta configurar el PATH"
-    
+    warning "⚠ Falta configurar el PATH completo"
+
     # Ofrecer agregar automáticamente
     if [ -t 0 ]; then
         echo ""
@@ -189,15 +202,15 @@ else
         if [[ $REPLY =~ ^[SsYy]$ ]]; then
             # Verificar si ya está configurado
             NEEDS_UPDATE=false
-            if ! grep -q "export PATH=.*$INSTALL_DIR" "$SHELL_RC" 2>/dev/null; then
+            if ! grep -q "export PATH=.*\$NVM_HOME/bin" "$SHELL_RC" 2>/dev/null; then
                 NEEDS_UPDATE=true
             fi
-            if ! grep -q "export PATH=.*\$NVM_DIR/current/bin" "$SHELL_RC" 2>/dev/null; then
+            if ! grep -q "export PATH=.*\$NVM_HOME/current/bin" "$SHELL_RC" 2>/dev/null; then
                 NEEDS_UPDATE=true
             fi
-            
+
             if [ "$NEEDS_UPDATE" = true ]; then
-                echo "export PATH=\"$INSTALL_DIR:\$NVM_DIR/current/bin:\$PATH\"" >> "$SHELL_RC"
+                echo "export PATH=\"\$NVM_HOME/bin:\$NVM_HOME/current/bin:\$PATH\"" >> "$SHELL_RC"
                 success "✓ PATH actualizado en $SHELL_RC"
                 warning "⚠ Reinicie su terminal o ejecute: source $SHELL_RC"
             else
@@ -208,7 +221,7 @@ else
             info "Para agregar al PATH manualmente:"
             info "Agregar al final de $SHELL_RC:"
             echo ""
-            echo "  export PATH=\"$INSTALL_DIR:\$NVM_DIR/current/bin:\$PATH\""
+            echo "  export PATH=\"\$NVM_HOME/bin:\$NVM_HOME/current/bin:\$PATH\""
             echo ""
             info "Luego, recargar la configuración:"
             echo "  source $SHELL_RC"
@@ -218,7 +231,7 @@ else
         info "Para agregar al PATH:"
         info "Agregar al final de $SHELL_RC:"
         echo ""
-        echo "  export PATH=\"$INSTALL_DIR:\$NVM_DIR/current/bin:\$PATH\""
+        echo "  export PATH=\"\$NVM_HOME/bin:\$NVM_HOME/current/bin:\$PATH\""
         echo ""
         info "Luego, recargar la configuración:"
         echo "  source $SHELL_RC"

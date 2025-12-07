@@ -2,11 +2,7 @@
 
 🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma
 
-[![Version](https://img.shields.io/github/v/release/FreddyCamposeco/nvm-rs?label=version)](https://github.com/FreddyCamposeco/nvm-rs/releases/latest)
-[![Rust](https://img.shields.io/badge/rust-1.91%2B-orange.svg)](https://www.rust-lang.org)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)]()
-[![Downloads](https://img.shields.io/github/downloads/FreddyCamposeco/nvm-rs/total)](https://github.com/FreddyCamposeco/nvm-rs/releases)
+[![Version](https://img.shields.io/github/v/release/FreddyCamposeco/nvm-rs?label=version)](https://github.com/FreddyCamposeco/nvm-rs/releases/latest) [![Rust](https://img.shields.io/badge/rust-1.91%2B-orange.svg)](https://www.rust-lang.org) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)]() [![Downloads](https://img.shields.io/github/downloads/FreddyCamposeco/nvm-rs/total)](https://github.com/FreddyCamposeco/nvm-rs/releases)
 
 ## 📋 Tabla de Contenidos
 
@@ -22,8 +18,8 @@
 
 ## 🚀 Estado del Proyecto
 
-**Versión**: 0.1.0  
-**Estado**: ✅ Producción - Totalmente Funcional  
+**Versión**: 0.1.0
+**Estado**: ✅ Producción - Totalmente Funcional
 **Plataformas**: Windows, Linux, macOS (x64 y ARM64)
 
 ## ✨ Características
@@ -68,11 +64,12 @@ curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts
 ```
 
 **El script automáticamente:**
+
 - ✅ Detecta tu sistema operativo y arquitectura
 - ✅ Descarga la versión correcta desde GitHub Releases
 - ✅ Verifica la integridad con checksums SHA256
-- ✅ Instala el binario en `%USERPROFILE%\.nvm\bin` (Windows) o `~/.local/bin` (Unix)
-- ✅ Configura variables de entorno (`NVM_DIR`, `PATH`)
+- ✅ Instala el binario en `%USERPROFILE%\.nvm\bin` (Windows) o `$NVM_HOME/bin` (Unix)
+- ✅ Configura variables de entorno (`NVM_HOME`, `NVM_BIN`, `NVM_NODE`)
 - ✅ Crea backup de versiones anteriores
 
 ### Gestión de nvm
@@ -177,6 +174,7 @@ nvm doctor
 nvm-rs utiliza una estructura consistente entre plataformas:
 
 ### Windows
+
 ```
 %USERPROFILE%\.nvm\
 ├── bin\
@@ -194,6 +192,7 @@ nvm-rs utiliza una estructura consistente entre plataformas:
 ```
 
 ### Linux / macOS
+
 ```
 ~/.nvm/
 ├── current/
@@ -214,18 +213,23 @@ nvm-rs utiliza una estructura consistente entre plataformas:
 ```
 
 **Variables de entorno configuradas:**
-- `NVM_DIR`: Directorio base de datos (`%USERPROFILE%\.nvm` o `~/.nvm`)
-- `PATH`: Incluye `%NVM_DIR%\bin` (nvm) y `%NVM_DIR%\current\bin` (Node.js activo)
+
+- `NVM_HOME`: Directorio base (`%USERPROFILE%\.nvm` o `~/.nvm`)
+- `NVM_BIN`: Binario de nvm (`$NVM_HOME/bin`)
+- `NVM_NODE`: Node.js activo (`$NVM_HOME/current/bin`)
+- `PATH`: Incluye `$NVM_BIN` (nvm) y `$NVM_NODE` (Node.js activo)
 
 Ver [PATH_STRUCTURE.md](PATH_STRUCTURE.md) para detalles completos sobre la estructura homologada.
 
 ## 🌍 Internacionalización
 
 **Idiomas soportados:**
+
 - 🇬🇧 `en` - English (default)
 - 🇪🇸 `es` - Español
 
 **Configurar idioma:**
+
 ```bash
 # Variable de entorno
 export NVM_LANG=es              # Unix
@@ -304,7 +308,9 @@ cargo doc --open
 
 | Variable | Descripción | Default |
 |----------|-------------|---------|
-| `NVM_DIR` | Directorio de instalación | `~/.nvm` |
+| `NVM_HOME` | Directorio base de nvm | `~/.nvm` |
+| `NVM_BIN` | Directorio del binario nvm | `$NVM_HOME/bin` |
+| `NVM_NODE` | Directorio de Node.js activo | `$NVM_HOME/current/bin` |
 | `NVM_LANG` | Idioma de la interfaz | `en` |
 | `NODE_MIRROR` | Mirror de Node.js | `https://nodejs.org/dist` |
 | `NO_COLOR` | Desactivar colores | - |
@@ -323,6 +329,7 @@ cargo doc --open
 ## 🎯 Comandos Disponibles
 
 ### Gestión de Node.js
+
 | Comando | Descripción |
 |---------|-------------|
 | `nvm install <version>` | Instalar versión de Node.js (soporta aliases: latest, lts, lts/iron) |
@@ -333,6 +340,7 @@ cargo doc --open
 | `nvm current` | Mostrar versión actualmente en uso |
 
 ### Sistema de Aliases
+
 | Comando | Descripción |
 |---------|-------------|
 | `nvm alias <name> <ver>` | Crear alias personalizado (ej: default, stable) |
@@ -340,12 +348,14 @@ cargo doc --open
 | `nvm aliases` | Listar todos los aliases configurados |
 
 ### Mantenimiento
+
 | Comando | Descripción |
 |---------|-------------|
 | `nvm cleanup [--yes]` | Limpiar versiones no usadas (mantiene LTS y actual) |
 | `nvm doctor` | Diagnóstico del sistema y configuración |
 
 ### Gestión de nvm
+
 | Comando | Descripción |
 |---------|-------------|
 | `nvm install-self [-v ver] [-d dir]` | Instalar/reinstalar nvm desde GitHub Releases |
@@ -353,6 +363,7 @@ cargo doc --open
 | `nvm uninstall-self [--yes]` | Desinstalar nvm del sistema |
 
 ### Configuración
+
 | Comando | Descripción |
 |---------|-------------|
 | `nvm lang <locale>` | Cambiar idioma (es/en) |
@@ -409,8 +420,8 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 <div align="center">
 
-**¿Encontraste un bug?** → [Reporta un issue](https://github.com/FreddyCamposeco/nvm-rs/issues)  
-**¿Tienes una idea?** → [Inicia una discusión](https://github.com/FreddyCamposeco/nvm-rs/discussions)  
+**¿Encontraste un bug?** → [Reporta un issue](https://github.com/FreddyCamposeco/nvm-rs/issues)
+**¿Tienes una idea?** → [Inicia una discusión](https://github.com/FreddyCamposeco/nvm-rs/discussions)
 **¿Te gusta el proyecto?** → [Dale una ⭐](https://github.com/FreddyCamposeco/nvm-rs)
 
 Hecho con ❤️ y 🦀 por [Freddy Camposeco](https://github.com/FreddyCamposeco)
