@@ -419,7 +419,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 🙏 Agradecimientos
 
-- Complementario con [nvm-windows](https://github.com/FreddyCamposeco/nvm-windows) - Implementación PowerShell del mismo autor
+- **nvm-rs reemplaza a nvm-windows** - Implementación mejorada multiplataforma en Rust (Windows, Linux, macOS)
 - Comunidad de Rust
 - Proyecto Node.js
 
@@ -436,8 +436,6 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - [Node.js Official Site](https://nodejs.org)
 - [Rust Programming Language](https://www.rust-lang.org)
 - [GitHub Releases - nvm-rs](https://github.com/FreddyCamposeco/nvm-rs/releases)
-- [nvm-windows](https://github.com/FreddyCamposeco/nvm-windows) - Alternativa en PowerShell del mismo autor
-- [_nvm-windows](https://github.com/FreddyCamposeco/_nvm-windows) - Versión mejorada de nvm-windows
 
 ---
 
