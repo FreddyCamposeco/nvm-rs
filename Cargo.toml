@@ -1,6 +1,6 @@
 [package]
 name = "nvm"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["Freddy Camposeco <your@email.com>"]
 description = "Node Version Manager - Multiplataforma en Rust"

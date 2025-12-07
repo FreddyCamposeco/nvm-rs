@@ -38,7 +38,7 @@ fn load_translations_from_file(locale: Locale) -> HashMap<String, String> {
 
     if let Ok(content) = std::fs::read_to_string(file_path) {
         if let Ok(docs) = YamlLoader::load_from_str(&content) {
-            if let Some(Yaml::Hash(hash)) = docs.get(0) {
+            if let Some(Yaml::Hash(hash)) = docs.first() {
                 for (key, value) in hash {
                     if let (Yaml::String(key_str), Yaml::String(value_str)) = (key, value) {
                         translations.insert(key_str.clone(), value_str.clone());

@@ -300,7 +300,7 @@ async fn main() -> Result<()> {
             #[cfg(not(windows))]
             let symlink_target = version_dir.join("bin");
 
-            symlink::create_or_update_symlink(&symlink_target, &current_link)
+            symlink::create_or_update_symlink(symlink_target, &current_link)
                 .context("Failed to create symlink")?;
 
             // Persistir la versión en .nvm-version para recuperación confiable
@@ -587,8 +587,8 @@ async fn main() -> Result<()> {
 
             println!("\n{}", t!("cleanup_keeping"));
             if let Some(ref current) = current_version {
-                println!("  {} {}", t!("cleanup_current_version")
-                    .replace("{version}", current), "");
+                println!("  {} ", t!("cleanup_current_version")
+                    .replace("{version}", current));
             }
             let lts_count = versions_to_keep.iter()
                 .filter(|v| {
@@ -839,47 +839,11 @@ async fn main() -> Result<()> {
                 }
             }
 
-            // Desinstalar
-            uninstall_binary(Some(&install_dir))?;
+            // Usar limpieza completa
+            let data_dir = dirs::home_dir()
+                .map(|h| h.join(".nvm"));
 
-            // Eliminar variables de entorno
-            #[cfg(windows)]
-            {
-                use core::installer::{remove_from_path, remove_nvm_home};
-
-                println!("\n{}", t!("uninstall_self_removing_env"));
-
-                // Eliminar del PATH (tanto bin como current/bin)
-                let nvm_data_dir = dirs::home_dir()
-                    .unwrap_or_else(|| PathBuf::from("."))
-                    .join(".nvm");
-                let current_dir = nvm_data_dir.join("current").join("bin");
-
-                if let Err(e) = remove_from_path(&install_dir) {
-                    println!("{}", t!("uninstall_self_env_warning")
-                        .replace("{error}", &e.to_string()));
-                } else {
-                    println!("✓ {}", t!("uninstall_self_path_removed"));
-                }
-
-                // Remover current del PATH
-                if let Err(e) = remove_from_path(&current_dir) {
-                    println!("⚠ No se pudo remover {} del PATH: {}", current_dir.display(), e);
-                } else {
-                    println!("✓ {}", t!("uninstall_self_path_removed"));
-                }
-
-                // Eliminar NVM_HOME
-                if let Err(e) = remove_nvm_home() {
-                    println!("{}", t!("uninstall_self_env_warning")
-                        .replace("{error}", &e.to_string()));
-                } else {
-                    println!("✓ {}", t!("uninstall_self_nvm_dir_removed"));
-                }
-            }
-
-            println!("\n✓ {}", t!("uninstall_self_complete"));
-            println!("{}", t!("uninstall_self_note"));
+            full_uninstall_cleanup(Some(&install_dir), data_dir.as_deref())?;
         }
 
         Commands::UpdateSelf { version, with_self_update } => {
