@@ -43,18 +43,18 @@ try {
 }
 
 # Determinar nombre del asset
-# Intentar primero con el nombre específico, luego con genérico
-$suffixList = @(
-    if ($WithSelfUpdate) { "-self-update" } else { "" }
-)
-
 # Crear lista de nombres a buscar (en orden de preferencia)
 $assetNames = @(
     "nvm-$releaseVersion-windows-$arch-self-update.exe",
     "nvm-$releaseVersion-windows-$arch.exe",
     "nvm-v$releaseVersion-windows-$arch.exe",
     "nvm.exe"
-) | Where-Object { -not ($WithSelfUpdate -and -not $_.Contains("-self-update")) }
+)
+
+# Si no es self-update, filtrar para no buscar versiones con -self-update
+if (-not $WithSelfUpdate) {
+    $assetNames = $assetNames | Where-Object { -not $_.Contains("-self-update") }
+}
 
 $asset = $null
 foreach ($name in $assetNames) {
