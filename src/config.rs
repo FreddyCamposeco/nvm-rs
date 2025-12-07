@@ -37,7 +37,7 @@ impl Config {
             node_mirror: std::env::var(NODE_MIRROR_VAR)
                 .unwrap_or_else(|_| "https://nodejs.org/dist".to_string()),
             arch,
-            cache_duration_minutes: 15,
+            cache_duration_minutes: 24 * 60,  // 24 hours
             installed_cache_duration_minutes: 5,
         })
     }
