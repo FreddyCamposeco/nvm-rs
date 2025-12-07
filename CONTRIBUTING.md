@@ -1,6 +1,6 @@
 # 🤝 Guía de Contribución
 
-¡Gracias por tu interés en contribuir a **nvm-rs**! 
+¡Gracias por tu interés en contribuir a **nvm-rs**!
 
 Este documento proporciona pautas para contribuir al proyecto.
 
@@ -43,6 +43,7 @@ Para proponer nuevas características:
 1. **Fork** el repositorio
 2. **Clone** tu fork localmente
 3. **Crea una rama** desde `dev`:
+
    ```bash
    git checkout -b feature/tu-feature
    ```
@@ -75,9 +76,10 @@ Para proponer nuevas características:
      - `chore:` Cambios en build, deps, etc.
 
    Ejemplo:
+
    ```
    feat: add support for .node-version files
-   
+
    - Parse .node-version files in current directory
    - Fallback to .nvmrc if .node-version not found
    - Add tests for version file detection
@@ -105,6 +107,7 @@ cargo build --release --features self-update
 #### Enviar el PR
 
 1. Push a tu fork:
+
    ```bash
    git push origin feature/tu-feature
    ```

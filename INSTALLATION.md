@@ -35,6 +35,7 @@ curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install
 ```
 
 **Características del script:**
+
 - ✅ Detecta automáticamente tu sistema operativo y arquitectura
 - ✅ Descarga la versión correcta desde GitHub Releases
 - ✅ Verifica la integridad del archivo con checksum SHA256
@@ -71,24 +72,27 @@ nvm install-self -d C:\nvm
    - Descarga `nvm-v0.1.0-windows-x64.exe` (o la versión con `-self-update` si deseas esa funcionalidad)
 
 2. **Verificar integridad (recomendado):**
+
    ```powershell
    Get-FileHash -Path "nvm-v0.1.0-windows-x64.exe" -Algorithm SHA256
    ```
 
 3. **Instalar:**
+
    ```powershell
    # Renombrar
    Rename-Item "nvm-v0.1.0-windows-x64.exe" "nvm.exe"
-   
+
    # Mover a ubicación deseada
    New-Item -ItemType Directory -Path "$env:LOCALAPPDATA\Programs\nvm" -Force
    Move-Item "nvm.exe" "$env:LOCALAPPDATA\Programs\nvm\"
-   
+
    # Agregar al PATH
    $env:PATH += ";$env:LOCALAPPDATA\Programs\nvm"
    ```
 
 4. **Verificar:**
+
    ```powershell
    nvm --version
    ```
@@ -96,37 +100,41 @@ nvm install-self -d C:\nvm
 #### Linux / macOS
 
 1. **Descargar el binario:**
+
    ```bash
    # Linux x64
    wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.1.0-linux-x64
-   
+
    # macOS x64
    wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.1.0-macos-x64
-   
+
    # Linux ARM64
    wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.1.0-linux-arm64
    ```
 
 2. **Verificar integridad:**
+
    ```bash
    sha256sum nvm-v0.1.0-linux-x64
    ```
 
 3. **Instalar:**
+
    ```bash
    # Hacer ejecutable
    chmod +x nvm-v0.1.0-linux-x64
-   
+
    # Mover a ubicación deseada
    mkdir -p ~/.local/bin
    mv nvm-v0.1.0-linux-x64 ~/.local/bin/nvm
-   
+
    # Agregar al PATH (si no está)
    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
    source ~/.bashrc
    ```
 
 4. **Verificar:**
+
    ```bash
    nvm --version
    ```
@@ -239,16 +247,19 @@ rm -rf ~/.nvm
 ### Windows
 
 **Método 1: PowerShell (temporal)**
+
 ```powershell
 $env:PATH += ";C:\nvm"
 ```
 
 **Método 2: Variables de Entorno (permanente)**
+
 1. Buscar "Variables de entorno" en el menú Inicio
 2. Editar la variable PATH del usuario
 3. Agregar `C:\nvm` (o tu directorio de instalación)
 
 **Método 3: PowerShell como Administrador (permanente)**
+
 ```powershell
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\nvm", "User")
 ```
@@ -262,6 +273,7 @@ export PATH="$HOME/.local/bin:$PATH"
 ```
 
 Luego recargar:
+
 ```bash
 source ~/.bashrc  # o source ~/.zshrc
 ```
@@ -306,6 +318,7 @@ nvm install-self --dir "$env:LOCALAPPDATA\Programs\nvm"
 ### Checksum no coincide
 
 Esto puede indicar una descarga corrupta o modificada. Intenta:
+
 1. Descargar de nuevo
 2. Verificar que estás descargando desde el repositorio oficial
 3. Reportar el problema en GitHub Issues
@@ -313,6 +326,7 @@ Esto puede indicar una descarga corrupta o modificada. Intenta:
 ### "Asset not found for your platform"
 
 Tu combinación de sistema operativo y arquitectura puede no estar soportada aún. Puedes:
+
 1. Compilar desde código fuente
 2. Solicitar soporte para tu plataforma en GitHub Issues
 

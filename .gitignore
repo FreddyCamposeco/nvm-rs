@@ -28,5 +28,4 @@ test-nvm/
 /release/
 
 # Reference directories (not part of the project)
-_nvm-windows/
-_old/
+_docs/
