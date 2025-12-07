@@ -176,11 +176,11 @@ nvm-rs utiliza una estructura consistente entre plataformas:
 ### Windows
 
 ```
-%USERPROFILE%\.nvm\
-├── bin\
+%USERPROFILE%\.nvm\                 # NVM_HOME
+├── bin\                          # $NVM_BIN
 │   └── nvm.exe                 # Binario de nvm
 ├── current\
-│   └── bin\                    # Symlink → v{version}
+│   └── bin\                    # Junction → v{version}\ ($NVM_NODE)
 │       ├── node.exe
 │       ├── npm.cmd
 │       └── npx.cmd
@@ -194,9 +194,11 @@ nvm-rs utiliza una estructura consistente entre plataformas:
 ### Linux / macOS
 
 ```
-~/.nvm/
+~/.nvm/                       # NVM_HOME
+├── bin/                       # $NVM_BIN
+│   └── nvm                   # Binario de nvm
 ├── current/
-│   └── bin/                    # Symlink → v{version}/bin
+│   └── bin/                    # Symlink → v{version}/bin ($NVM_NODE)
 │       ├── node
 │       ├── npm
 │       └── npx
@@ -307,13 +309,32 @@ cargo doc --open
 ## 📝 Variables de Entorno
 
 | Variable | Descripción | Default |
-|----------|-------------|---------|
+|----------|-------------|----------|
 | `NVM_HOME` | Directorio base de nvm | `~/.nvm` |
 | `NVM_BIN` | Directorio del binario nvm | `$NVM_HOME/bin` |
 | `NVM_NODE` | Directorio de Node.js activo | `$NVM_HOME/current/bin` |
 | `NVM_LANG` | Idioma de la interfaz | `en` |
-| `NODE_MIRROR` | Mirror de Node.js | `https://nodejs.org/dist` |
-| `NO_COLOR` | Desactivar colores | - |
+| `NODE_MIRROR` | Mirror de Node.js para descargas | `https://nodejs.org/dist` |
+| `NO_COLOR` | Desactivar colores en la salida | - |
+
+**Ejemplos de configuración:**
+
+```bash
+# Linux/macOS - Agregar a ~/.bashrc o ~/.zshrc
+export NVM_HOME="$HOME/.nvm"
+export NVM_BIN="$NVM_HOME/bin"
+export NVM_NODE="$NVM_HOME/current/bin"
+export NODE_MIRROR="https://mirrors.aliyun.com/nodejs-release"  # Mirror alternativo
+export PATH="$NVM_BIN:$NVM_NODE:$PATH"
+```
+
+```powershell
+# Windows PowerShell - Ejecutar una sola vez
+[Environment]::SetEnvironmentVariable('NVM_HOME', "$env:USERPROFILE\.nvm", 'User')
+[Environment]::SetEnvironmentVariable('NVM_BIN', "$env:NVM_HOME\bin", 'User')
+[Environment]::SetEnvironmentVariable('NVM_NODE', "$env:NVM_HOME\current\bin", 'User')
+[Environment]::SetEnvironmentVariable('NODE_MIRROR', 'https://nodejs.org/dist', 'User')
+```
 
 ## 📊 Estadísticas del Proyecto
 

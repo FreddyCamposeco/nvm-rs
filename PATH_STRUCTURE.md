@@ -83,7 +83,7 @@ export PATH="$NVM_HOME/bin:$NVM_HOME/current/bin:$PATH"
 |----------|---------|-------------|------------|----------|
 | **nvm home** | `%USERPROFILE%\.nvm` | `~/.nvm` | `$NVM_HOME` | `NVM_HOME` |
 | **binario nvm** | `%NVM_HOME%\bin\nvm.exe` | `$NVM_HOME/bin/nvm` | `$NVM_BIN` | `NVM_BIN` |
-| **node activo** | `%NVM_HOME%\current\bin` | `$NVM_HOME/current/bin` | `$NVM_HOME/current/bin` | `NVM_NODE` |
+| **node activo** | `%NVM_HOME%\current\bin` | `$NVM_HOME/current/bin` | `$NVM_NODE` | `NVM_NODE` |
 | **Node instalado** | `%NVM_HOME%\v{version}\*` | `$NVM_HOME/v{version}/bin/*` | `$NVM_HOME/v{version}` | N/A |
 | **Separador PATH** | `;` (punto y coma) | `:` (dos puntos) | Según SO | N/A |
 
@@ -97,7 +97,7 @@ Para escribir código que funcione en ambos sistemas:
 // ✅ Rutas homologadas - Usa PathBuf
 let nvm_home = home::home_dir()?.join(".nvm");
 let nvm_bin = nvm_home.join("bin");         // $NVM_BIN
-let nvm_node = nvm_home.join("current").join("bin");  // $NVM_NODE (homologado)
+let nvm_node = nvm_home.join("current").join("bin");  // Construye ruta equivalente a $NVM_NODE
 let version_dir = nvm_home.join("v18.17.0"); // $NVM_HOME/v{version}
 
 // ✅ Para acceder a binarios de versión
