@@ -75,7 +75,14 @@ enum Commands {
     Aliases,
 
     /// Verify installation and system info
-    Doctor,
+    Doctor {
+        /// Show all Node.js installations found in the system
+        #[arg(long)]
+        all: bool,
+        /// Show only system Node.js (not NVM-managed)
+        #[arg(long)]
+        system: bool,
+    },
 
     /// Remove unused versions (keep current and LTS)
     Cleanup {
@@ -528,12 +535,38 @@ async fn main() -> Result<()> {
         }
 
 
-        Commands::Doctor => {
-            println!("Command 'doctor' - Basic implementation");
-            show_doctor_info(&config)?;
-        }
+        Commands::Doctor { all, system } => {
+            if all || system {
+                // Mostrar detección de Node.js del sistema
+                if let Some(system_node) = core::detection::detect_system_node() {
+                    println!("\n🔍 System Node.js Found:");
+                    println!("   Version: {}", system_node.version);
+                    println!("   Path: {}", system_node.path.display());
+                    if let Some(npm_ver) = system_node.npm_version {
+                        println!("   npm: {}", npm_ver);
+                    }
+                }
+            }
 
-        Commands::Cleanup { yes } => {
+            if all {
+                // Mostrar todas las instalaciones encontradas
+                let all_installations = core::detection::find_all_node_installations();
+                if !all_installations.is_empty() {
+                    println!("\n📍 All Node.js Installations ({}):", all_installations.len());
+                    for (idx, info) in all_installations.iter().enumerate() {
+                        println!("   {}. {} @ {}", idx + 1, info.version, info.path.display());
+                        if let Some(npm_ver) = &info.npm_version {
+                            println!("      npm: {}", npm_ver);
+                        }
+                    }
+                }
+            }
+
+            if !all && !system {
+                // Mostrar información completa de doctor
+                show_doctor_info(&config)?;
+            }
+        }        Commands::Cleanup { yes } => {
             use crate::core::versions;
             use std::io::{self, Write};
 
