@@ -172,6 +172,7 @@ pub struct CacheInfo {
 
 impl CacheInfo {
     /// Formato legible del tamaño
+    #[allow(dead_code)]
     pub fn size_human_readable(&self) -> String {
         let units = ["B", "KB", "MB", "GB"];
         let mut size = self.size_bytes as f64;
@@ -186,6 +187,7 @@ impl CacheInfo {
     }
 
     /// Tiempo desde última actualización en formato legible
+    #[allow(dead_code)]
     pub fn last_updated_human_readable(&self) -> String {
         if let Some(secs) = self.last_updated {
             if secs < 60 {
