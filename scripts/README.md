@@ -1,44 +1,102 @@
-# Scripts de Build y Release para nvm-rs
+# Scripts de nvm-rs
 
-## 📋 Resumen
+Colección organizada de scripts para compilar, instalar y publicar nvm-rs.
 
-Se han creado scripts completos para compilar y publicar releases multi-plataforma de nvm-rs con nombres de binarios compatibles con el instalador.
-
-## 🎯 Problema Resuelto
-
-**Error anterior:**
+## 📁 Estructura
 
 ```
-❯ nvm install-self
-Error: Asset nvm-v0.5.0-windows-x64.exe not found for your platform
+scripts/
+├── build/                  # Scripts de compilación
+│   ├── build-releases.ps1  # Build multi-plataforma (PowerShell)
+│   ├── build.sh            # Build para Unix/Linux/macOS
+│   ├── build.bat           # Wrapper para CMD.exe
+│   └── README.md           # Documentación de build
+├── install/                # Scripts de instalación
+│   ├── install.ps1         # Instalador Windows (PowerShell)
+│   ├── install.sh          # Instalador Unix/Linux/macOS
+│   ├── uninstall.ps1       # Desinstalador Windows
+│   ├── uninstall.sh        # Desinstalador Unix/Linux/macOS
+│   └── README.md           # Documentación de instalación
+├── release/                # Scripts de publicación y validación
+│   ├── publish-release.ps1 # Publicar en GitHub
+│   ├── validate-release.ps1 # Validar artifacts
+│   └── README.md           # Documentación de release
+├── BUILD_GUIDE.md          # Guía completa de compilación
+└── README.md               # Este archivo
 ```
 
-**Causa:** Los binarios no seguían el formato esperado por el instalador.
+## 🎯 Categorías de Scripts
 
-**Solución:** Scripts automatizados que:
+### 🔨 Compilación (`build/`)
 
-1. Compilan para múltiples plataformas
-2. Generan nombres correctos (`nvm-vX.Y.Z-OS-ARCH[.ext]`)
-3. Validan checksums
-4. Publican en GitHub Releases
+Compila nvm-rs para múltiples plataformas y arquitecturas.
 
-## 📦 Archivos Creados
+| Script | Plataforma | Uso |
+|--------|-----------|-----|
+| `build-releases.ps1` | Windows | `.\build\build-releases.ps1 -Target windows-x64` |
+| `build.sh` | Linux/macOS | `./build/build.sh linux-x64` |
+| `build.bat` | Windows (CMD) | `build.bat` |
 
-### Scripts Principales
+**Ver:** `build/README.md`
 
-| Script | Descripción | Uso |
-|--------|-------------|-----|
-| `scripts/build-releases.ps1` | Build multi-plataforma (PowerShell) | `.\scripts\build-releases.ps1` |
-| `scripts/build.sh` | Build para Unix/Linux/macOS | `./scripts/build.sh` |
-| `scripts/build.bat` | Wrapper para CMD.exe | `build.bat` |
-| `scripts/publish-release.ps1` | Publicar en GitHub | `.\scripts\publish-release.ps1` |
-| `scripts/validate-release.ps1` | Validar artifacts | `.\scripts\validate-release.ps1` |
-| `Makefile` | Comandos de build simplificados | `make build-all` |
+### 📥 Instalación (`install/`)
 
-### Documentación
+Instala y desinstala nvm-rs en el sistema.
 
-- `scripts/BUILD_GUIDE.md` - Guía completa de build y release
-- `scripts/README.md` - Este archivo
+| Script | Plataforma | Uso |
+|--------|-----------|-----|
+| `install.ps1` | Windows | `.\install\install.ps1` |
+| `install.sh` | Linux/macOS | `./install/install.sh` |
+| `uninstall.ps1` | Windows | `.\install\uninstall.ps1` |
+| `uninstall.sh` | Linux/macOS | `./install/uninstall.sh` |
+
+**Ver:** `install/README.md`
+
+### 🚀 Release (`release/`)
+
+Publica y valida releases en GitHub.
+
+| Script | Función | Uso |
+|--------|---------|-----|
+| `validate-release.ps1` | Validar artifacts | `.\release\validate-release.ps1` |
+| `publish-release.ps1` | Publicar en GitHub | `.\release\publish-release.ps1 -Version v0.5.0` |
+
+**Ver:** `release/README.md`
+
+## 📋 Guías Rápidas
+
+### Compilar
+
+```powershell
+# Windows x64
+.\build\build-releases.ps1 -Target windows-x64
+
+# Todos los targets
+.\build\build-releases.ps1
+```
+
+### Instalar
+
+```powershell
+# Windows
+.\install\install.ps1
+
+# Linux/macOS
+./install/install.sh
+```
+
+### Publicar Release
+
+```powershell
+# 1. Validar
+.\release\validate-release.ps1
+
+# 2. Publicar como draft
+.\release\publish-release.ps1 -Version v0.5.0 -Draft
+
+# 3. Publicar (después de revisar en GitHub)
+.\release\publish-release.ps1 -Version v0.5.0
+```
 
 ## 🚀 Uso Rápido
 
