@@ -90,6 +90,7 @@ fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
     let mut extracted_root = None;
 
     // Extraer archivos
+    let mut entry_count = 0;
     for entry in archive.entries().context("Failed to read tar entries")? {
         let mut entry = entry.context("Failed to read tar entry")?;
         let path = entry.path().context("Failed to get entry path")?.to_path_buf();
@@ -103,24 +104,41 @@ fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
 
         let outpath = dest_dir.join(&path);
 
+        // Debug: mostrar primeros entries
+        entry_count += 1;
+        if entry_count <= 5 {
+            println!("  Processing entry #{}: {} -> {}", entry_count, path.display(), outpath.display());
+        }
+
         // Crear directorio padre si no existe
         if let Some(parent) = outpath.parent() {
             // Solo crear si no existe ya
             if !parent.exists() {
+                if entry_count <= 5 {
+                    println!("    Creating parent: {}", parent.display());
+                }
                 fs::create_dir_all(parent)
                     .context(format!("Failed to create parent directory: {}", parent.display()))?;
             }
+        } else {
+            println!("    WARNING: No parent for {}", outpath.display());
         }
 
         // Manejar directorios y archivos por separado
         if entry.header().entry_type().is_dir() {
             // Para directorios, asegurar que existen
             if !outpath.exists() {
+                if entry_count <= 5 {
+                    println!("    Creating directory");
+                }
                 fs::create_dir_all(&outpath)
                     .context(format!("Failed to create directory: {}", outpath.display()))?;
             }
         } else {
             // Para archivos, usar unpack
+            if entry_count <= 5 {
+                println!("    Unpacking file");
+            }
             entry.unpack(&outpath)
                 .context(format!("Failed to extract file: {} to {}", path.display(), outpath.display()))?;
         }
