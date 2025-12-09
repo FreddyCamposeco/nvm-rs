@@ -103,6 +103,12 @@ fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
 
         let outpath = dest_dir.join(&path);
 
+        // Crear directorio padre si no existe
+        if let Some(parent) = outpath.parent() {
+            fs::create_dir_all(parent)
+                .context(format!("Failed to create parent directory: {}", parent.display()))?;
+        }
+
         // Extraer archivo/directorio
         entry.unpack(&outpath)
             .context(format!("Failed to extract: {}", path.display()))?;
