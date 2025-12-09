@@ -1,6 +1,0 @@
-/target
-Cargo.lock
-*.log
-.DS_Store
-Thumbs.db
-_nvm-windows/
