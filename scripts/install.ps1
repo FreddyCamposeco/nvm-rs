@@ -42,34 +42,48 @@ try {
     exit 1
 }
 
-# Determinar nombre del asset
-# Crear lista de nombres a buscar (en orden de preferencia)
-$assetNames = @(
-    "nvm-$releaseVersion-windows-$arch-self-update.exe",
-    "nvm-$releaseVersion-windows-$arch.exe",
-    "nvm-v$releaseVersion-windows-$arch.exe",
+# Determinar nombre del asset con patrón flexible
+# El instalador busca binarios compatibles con el formato: nvm-vX.Y.Z-windows-ARCH[.exe]
+$versionNumber = $releaseVersion -replace '^v', ''
+
+# Crear patrones de búsqueda (en orden de preferencia)
+$searchPatterns = @(
+    # Exact version with self-update if requested
+    if ($WithSelfUpdate) { "nvm-v$versionNumber-self-update-windows-$arch.exe" }
+
+    # Exact version
+    "nvm-v$versionNumber-windows-$arch.exe"
+
+    # Version without 'v' prefix
+    "nvm-$versionNumber-windows-$arch.exe"
+
+    # Any nvm for windows with architecture
+    "*windows-$arch.exe"
+
+    # Fallback to any nvm.exe
     "nvm.exe"
 )
 
-# Si no es self-update, filtrar para no buscar versiones con -self-update
-if (-not $WithSelfUpdate) {
-    $assetNames = $assetNames | Where-Object { -not $_.Contains("-self-update") }
-}
-
 $asset = $null
-foreach ($name in $assetNames) {
-    $asset = $release.assets | Where-Object { $_.name -eq $name } | Select-Object -First 1
+$assetName = $null
+
+foreach ($pattern in $searchPatterns) {
+    Write-Info "Buscando: $pattern"
+    $asset = $release.assets | Where-Object { $_.name -like $pattern } | Select-Object -First 1
     if ($asset) {
-        $assetName = $name
-        Write-Info "Asset a descargar: $assetName"
+        $assetName = $asset.name
+        Write-Info "Asset encontrado: $assetName"
         break
     }
 }
 
 if (-not $asset) {
-    Write-Error "No se encontró un asset compatible en la release"
-    Write-Info "Assets disponibles:"
-    $release.assets | ForEach-Object { Write-Info "  - $($_.name)" }
+    Write-Error "Error: No se encontró un asset compatible para Windows $arch en la release"
+    Write-Info ""
+    Write-Info "Assets disponibles en la release:"
+    $release.assets | ForEach-Object { Write-Info "  • $($_.name) ($([math]::Round($_.size/1MB, 2)) MB)" }
+    Write-Info ""
+    Write-Info "Por favor, verifica que la release contiene binarios compilados para Windows"
     exit 1
 }
 
