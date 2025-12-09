@@ -105,13 +105,25 @@ fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
 
         // Crear directorio padre si no existe
         if let Some(parent) = outpath.parent() {
-            fs::create_dir_all(parent)
-                .context(format!("Failed to create parent directory: {}", parent.display()))?;
+            // Solo crear si no existe ya
+            if !parent.exists() {
+                fs::create_dir_all(parent)
+                    .context(format!("Failed to create parent directory: {}", parent.display()))?;
+            }
         }
 
-        // Extraer archivo/directorio
-        entry.unpack(&outpath)
-            .context(format!("Failed to extract: {}", path.display()))?;
+        // Manejar directorios y archivos por separado
+        if entry.header().entry_type().is_dir() {
+            // Para directorios, asegurar que existen
+            if !outpath.exists() {
+                fs::create_dir_all(&outpath)
+                    .context(format!("Failed to create directory: {}", outpath.display()))?;
+            }
+        } else {
+            // Para archivos, usar unpack
+            entry.unpack(&outpath)
+                .context(format!("Failed to extract file: {} to {}", path.display(), outpath.display()))?;
+        }
 
         // En Unix, preservar permisos ejecutables
         #[cfg(unix)]
@@ -120,9 +132,11 @@ fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
             if let Ok(mode) = entry.header().mode() {
                 if mode & 0o111 != 0 {
                     // Tiene permisos de ejecución
-                    let mut perms = fs::metadata(&outpath)?.permissions();
-                    perms.set_mode(mode);
-                    fs::set_permissions(&outpath, perms)?;
+                    if let Ok(metadata) = fs::metadata(&outpath) {
+                        let mut perms = metadata.permissions();
+                        perms.set_mode(mode);
+                        let _ = fs::set_permissions(&outpath, perms);
+                    }
                 }
             }
         }
