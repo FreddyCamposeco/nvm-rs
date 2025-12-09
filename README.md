@@ -47,22 +47,22 @@
 
 ```powershell
 # Instalación con un solo comando
-iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 
 # O con opciones personalizadas
-$env:NVM_VERSION="v0.5.0"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
+$env:NVM_VERSION="v0.5.0"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 ```
 
 **Linux / macOS (Bash)**
 
 ```bash
 # Instalación con un solo comando
-curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 
 # O con opciones personalizadas
 export NVM_VERSION="v0.5.0"
 export NVM_INSTALL_DIR="$HOME/.nvm"
-curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 ```
 
 **El script automáticamente:**

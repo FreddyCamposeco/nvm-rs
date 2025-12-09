@@ -21,6 +21,7 @@ iwr -useb https://github.com/FreddyCamposeco/nvm-rs/releases/download/latest/ins
 ```
 
 **Características:**
+
 - Descarga automática de la versión más reciente
 - Extrae a `$env:USERPROFILE\.nvm\`
 - Configura PATH automáticamente
@@ -43,6 +44,7 @@ curl -fsSL https://github.com/FreddyCamposeco/nvm-rs/releases/download/latest/in
 ```
 
 **Características:**
+
 - Descarga automática desde GitHub
 - Extrae a `~/.nvm/`
 - Configura PATH en shell profile
@@ -61,6 +63,7 @@ Script de desinstalación para Windows. Elimina completamente nvm-rs del sistema
 ```
 
 **Características:**
+
 - Elimina binarios instalados
 - Limpia variables de entorno
 - Remueve PATH entries
@@ -79,6 +82,7 @@ Script de desinstalación para sistemas Unix.
 ```
 
 **Características:**
+
 - Elimina archivos instalados
 - Limpia configuración de shell
 - Remueve PATH entries
@@ -144,19 +148,22 @@ nvm --version
 ## Troubleshooting
 
 **Error: "nvm command not found" después de instalar**
+
 - Reiniciar PowerShell/CMD después de la instalación
 - Verificar que `%USERPROFILE%\.nvm\bin` está en PATH
 
 **Error: "Access Denied" en Windows**
+
 - Ejecutar PowerShell como Administrador
 - Puede requerir permisos elevados para modificar el registro
 
 **Error: "Cannot download asset"**
+
 - Verificar conexión a GitHub
 - Comprobar que la versión existe: `git tag`
 - Usar versión específica: `./install.ps1 -Version v0.5.0`
 
 ## Links Útiles
 
-- **GitHub Releases**: https://github.com/FreddyCamposeco/nvm-rs/releases
+- **GitHub Releases**: <https://github.com/FreddyCamposeco/nvm-rs/releases>
 - **Instrucciones detalladas**: Ver `/INSTALLATION.md`

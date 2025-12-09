@@ -17,6 +17,7 @@ Script principal de compilación cross-platform. Compila nvm-rs para todos los t
 ```
 
 **Características:**
+
 - Compila múltiples targets automáticamente
 - Genera checksums SHA256
 - Crea manifest.json con metadatos
@@ -38,6 +39,7 @@ Script de compilación para sistemas Unix/Linux/macOS.
 ```
 
 **Características:**
+
 - Auto-detección de OS y arquitectura
 - Fallback a cargo si PowerShell no disponible
 - Compatible con CI/CD
@@ -104,14 +106,17 @@ make build-all
 ## Troubleshooting
 
 **Error: "cargo not found"**
-- Instalar Rust: https://rustup.rs/
+
+- Instalar Rust: <https://rustup.rs/>
 - Instalar targets: `rustup target add x86_64-pc-windows-msvc`
 
 **Error: "Target not supported"**
+
 - Ver lista de targets disponibles en el script
 - Asegurarse de tener los targets de Rust instalados
 
 **Compilación lenta**
+
 - Primera compilación puede tardar 1-2 minutos
 - Compilaciones subsecuentes son más rápidas
 - Limpiar caché: `cargo clean` si es necesario

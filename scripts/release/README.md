@@ -17,6 +17,7 @@ Script para crear y publicar releases en GitHub. Automatiza todo el proceso de c
 ```
 
 **Características:**
+
 - Crea git tag automáticamente
 - Genera notas de release
 - Carga todos los artifacts
@@ -24,6 +25,7 @@ Script para crear y publicar releases en GitHub. Automatiza todo el proceso de c
 - Actualiza installer scripts
 
 **Prerequisitos:**
+
 - Git instalado
 - GitHub CLI (`gh`) autenticado
 - Acceso push al repositorio
@@ -44,6 +46,7 @@ Script para validar que los artifacts están listos para publicación. Verifica 
 ```
 
 **Validaciones:**
+
 - Nombres de archivos (formato correcto: `nvm-vX.Y.Z-PLATFORM-ARCH`)
 - Checksums SHA256 válidos
 - Manifest JSON bien formado
@@ -172,29 +175,33 @@ A1B2C3D4E5F6...                                                      nvm-v0.5.0-
 ## Troubleshooting
 
 **Error: "GitHub CLI not authenticated"**
+
 ```powershell
 gh auth login
 gh auth status  # Verificar
 ```
 
 **Error: "Assets not found"**
+
 - Asegurar que los binarios están compilados
 - Verificar ruta: `../release-builds/`
 - Verificar nombres de archivo
 
 **Error: "Tag already exists"**
+
 - El tag ya fue creado previamente
 - Usar `git tag -d vX.Y.Z` para eliminar localmente
 - Usar `git push origin --delete vX.Y.Z` para eliminar en remote
 
 **Validación falla pero quiero publicar**
+
 - Revisar advertencias: pueden ser no críticas
 - Si hay errores críticos: compilar nuevamente
 - Usar `-Draft` primero para revisar
 
 ## Links Útiles
 
-- **GitHub CLI Docs**: https://cli.github.com/manual
-- **GitHub Releases API**: https://docs.github.com/rest/releases
+- **GitHub CLI Docs**: <https://cli.github.com/manual>
+- **GitHub Releases API**: <https://docs.github.com/rest/releases>
 - **Build Scripts**: Ver `../build/README.md`
 - **Quick Release**: Ver `../../docs/QUICK_RELEASE.md`
