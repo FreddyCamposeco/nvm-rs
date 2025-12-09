@@ -197,7 +197,7 @@ async fn main() -> Result<()> {
             }
 
             // Crear directorio temporal para descargas
-            let download_dir = config.nvm_dir.join("downloads");
+            let download_dir = config.nvm_dir.join("cache");
             std::fs::create_dir_all(&download_dir)?;
 
             // Descargar archivo

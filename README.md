@@ -180,43 +180,49 @@ nvm-rs utiliza una estructura consistente entre plataformas:
 ### Windows
 
 ```
-%USERPROFILE%\.nvm\                 # NVM_HOME
-├── bin\                          # $NVM_BIN
-│   └── nvm.exe                 # Binario de nvm
-├── current\
-│   └── bin\                    # Junction → v{version}\ ($NVM_NODE)
-│       ├── node.exe
-│       ├── npm.cmd
-│       └── npx.cmd
-├── v18.17.0\                   # Versión instalada
-│   ├── node.exe
-│   ├── npm.cmd
-│   └── node_modules\
-└── downloads\                  # Archivos temporales
+%USERPROFILE%\.nvm\             # NVM_HOME
+├── .version_cache.json
+├── alias\                      # Aliases personalizados
+├── bin\                        # $NVM_BIN (binario de nvm)
+│   └── nvm.exe
+├── cache\                      # Archivos descargados
+├── current\                    # Junction a versión activa
+│   ├── bin\                    # Junction → ..\versions\v{version}\bin ($NVM_NODE)
+│   │   ├── node.exe
+│   │   ├── npm.cmd
+│   │   └── npx.cmd
+│   └── .nvm-version            # Archivo con versión persistida
+└── versions\                   # Versiones instaladas
+    └── v18.17.0\
+        ├── bin\
+        │   ├── node.exe
+        │   ├── npm.cmd
+        │   └── npx.cmd
+        └── lib\
 ```
 
 ### Linux / macOS
 
 ```
 ~/.nvm/                        # NVM_HOME
+├── .version_cache.json
+├── alias/                      # Aliases personalizados
 ├── bin/                        # $NVM_BIN (binario de nvm)
 │   └── nvm
-├── versions/                   # Versiones instaladas
-│   └── v18.17.0/
-│       ├── bin/
-│       │   ├── node
-│       │   ├── npm
-│       │   └── npx
-│       └── lib/
+├── cache/                      # Archivos descargados
 ├── current/                    # Symlink a versión activa
 │   ├── bin/                    # Symlink → ../versions/v{version}/bin ($NVM_NODE)
 │   │   ├── node
 │   │   ├── npm
 │   │   └── npx
 │   └── .nvm-version            # Archivo con versión persistida
-├── cache/                      # Archivos descargados
-├── alias/                      # Aliases personalizados
-└── .version_cache.json         # Cache de versiones remotas
+└── versions/                   # Versiones instaladas
+    └── v18.17.0/
+        ├── bin/
+        │   ├── node
+        │   ├── npm
+        │   └── npx
+        └── lib/      # Cache de versiones remotas
 ```
 
 **Variables de entorno configuradas:**

@@ -93,11 +93,17 @@ Write-Info "Configurando estructura de directorios..."
 $nvmHomeDir = "$env:USERPROFILE\.nvm"
 $nvmBinDir = "$nvmHomeDir\bin"
 $nvmNodeDir = "$nvmHomeDir\current\bin"
+$nvmVersionsDir = "$nvmHomeDir\versions"
+$nvmCacheDir = "$nvmHomeDir\cache"
+$nvmAliasDir = "$nvmHomeDir\alias"
 
 try {
     New-Item -ItemType Directory -Path $nvmHomeDir -Force | Out-Null
     New-Item -ItemType Directory -Path $nvmBinDir -Force | Out-Null
     New-Item -ItemType Directory -Path $nvmNodeDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $nvmVersionsDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $nvmCacheDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $nvmAliasDir -Force | Out-Null
     Write-Success "✓ Directorios creados"
 } catch {
     Write-Error "Error al crear directorios: $_"
