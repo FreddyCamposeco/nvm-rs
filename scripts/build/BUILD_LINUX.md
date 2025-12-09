@@ -276,10 +276,43 @@ cargo strip --release
 
 After building:
 
-1. **Test the binary:** `./release-builds/nvm-v0.5.1-linux-gnu-x64 --help`
-2. **Run validation:** `bash ./scripts/release/validate-release.ps1` (requires PowerShell)
-3. **Install:** Copy to `~/.local/bin/` or system PATH
-4. **Verify:** Run `nvm --version` and `nvm doctor --all`
+1. **Test the binary:** `./release-builds/nvm-v0.5.1-linux-x64 --help`
+2. **Install:** Copy to `~/.local/bin/` or system PATH
+
+   ```bash
+   chmod +x ./release-builds/nvm-v0.5.1-linux-x64
+   cp ./release-builds/nvm-v0.5.1-linux-x64 ~/.local/bin/nvm
+   ```
+
+3. **Verify:** Run `nvm --version`
+4. **Create required directories:**
+
+   ```bash
+   mkdir -p ~/.nvm/versions
+   mkdir -p ~/.nvm/current/bin
+   ```
+
+5. **Install a Node.js version:** `nvm install Krypton`
+
+## Directory Structure
+
+nvm-rs uses a standardized structure across platforms:
+
+```
+~/.nvm/
+├── versions/              # Downloaded Node.js versions
+│   ├── v24.11.1/
+│   │   ├── bin/           # node, npm, npx executables
+│   │   └── lib/
+│   └── v22.x.x/
+├── current/               # Symlink to active version (homologated)
+│   ├── bin/               # Points to active version's bin/
+│   └── .nvm-version       # Persisted current version
+├── cache/                 # Downloaded archives
+└── alias/                 # Version aliases (future)
+```
+
+**Note:** On Windows, nvm executable goes in `%NVM_HOME%\bin\`. On Linux/macOS, copy it to `~/.local/bin/` or another PATH directory.
 
 ## Additional Resources
 

@@ -131,6 +131,16 @@ mv "$TEMP_FILE" "$EXE_PATH"
 chmod +x "$EXE_PATH"
 success "✓ Binario instalado en: $EXE_PATH"
 
+# Crear estructura de directorios necesarios
+info ""
+info "Creando estructura de directorios en \$NVM_HOME..."
+NVM_HOME_DIR="$HOME/.nvm"
+mkdir -p "$NVM_HOME_DIR/versions"
+mkdir -p "$NVM_HOME_DIR/current/bin"
+mkdir -p "$NVM_HOME_DIR/cache"
+mkdir -p "$NVM_HOME_DIR/alias"
+success "✓ Directorios creados en: $NVM_HOME_DIR"
+
 # Verificar que funciona
 info ""
 info "Verificando instalación..."
