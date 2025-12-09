@@ -11,6 +11,7 @@ sudo bash ./scripts/setup-linux-build-env.sh
 ```
 
 This script will:
+
 - Detect your Linux distribution
 - Install all required dependencies
 - Verify the installation
@@ -98,6 +99,7 @@ rustup target list
 ```
 
 Common targets for Linux:
+
 - `x86_64-unknown-linux-gnu` - Linux x64 (glibc)
 - `x86_64-unknown-linux-musl` - Linux x64 (musl/static)
 - `aarch64-unknown-linux-gnu` - Linux ARM64 (glibc)
@@ -153,12 +155,14 @@ chmod +x ~/.local/bin/nvm
 ### Error: Could not find OpenSSL
 
 **Problem:**
+
 ```
 error: failed to run custom build command for `openssl-sys v0.9.111`
 Could not find directory of OpenSSL installation
 ```
 
 **Solution:**
+
 ```bash
 # Install setup script
 sudo bash ./scripts/setup-linux-build-env.sh
@@ -180,11 +184,13 @@ sudo apk add openssl-dev
 ### Error: pkg-config not found
 
 **Problem:**
+
 ```
 The pkg-config command could not be found.
 ```
 
 **Solution:**
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get install pkg-config
@@ -202,11 +208,13 @@ sudo apk add pkgconfig
 ### Error: C compiler not found
 
 **Problem:**
+
 ```
 error: no default toolchain configured
 ```
 
 **Solution:**
+
 ```bash
 # Install build tools
 # Ubuntu/Debian
