@@ -5,11 +5,13 @@ Scripts para compilar nvm-rs para múltiples plataformas.
 ## Quick Start
 
 ### En Windows
+
 ```powershell
 .\build-releases.ps1
 ```
 
 ### En Linux/macOS
+
 ```bash
 # Instalar dependencias (primera vez)
 sudo bash ./setup-linux-build-env.sh
