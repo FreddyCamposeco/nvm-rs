@@ -277,42 +277,58 @@ cargo strip --release
 After building:
 
 1. **Test the binary:** `./release-builds/nvm-v0.5.1-linux-x64 --help`
-2. **Install:** Copy to `~/.local/bin/` or system PATH
+2. **Install:** Copy to `~/.nvm/bin/` (homologated location)
 
    ```bash
+   mkdir -p ~/.nvm/bin
    chmod +x ./release-builds/nvm-v0.5.1-linux-x64
-   cp ./release-builds/nvm-v0.5.1-linux-x64 ~/.local/bin/nvm
+   cp ./release-builds/nvm-v0.5.1-linux-x64 ~/.nvm/bin/nvm
    ```
 
-3. **Verify:** Run `nvm --version`
-4. **Create required directories:**
+3. **Add to PATH:**
+
+   ```bash
+   echo 'export PATH="$HOME/.nvm/bin:$PATH"' >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+4. **Verify:** Run `nvm --version`
+5. **Create required directories:**
 
    ```bash
    mkdir -p ~/.nvm/versions
    mkdir -p ~/.nvm/current/bin
    ```
 
-5. **Install a Node.js version:** `nvm install Krypton`
+6. **Install a Node.js version:** `nvm install Krypton`
 
 ## Directory Structure
 
-nvm-rs uses a standardized structure across platforms:
+nvm-rs uses a standardized structure across platforms (homologated):
 
 ```
 ~/.nvm/
-├── versions/              # Downloaded Node.js versions
+├── bin/                       # Binario de nvm ($NVM_BIN)
+│   └── nvm
+├── versions/                  # Downloaded Node.js versions
 │   ├── v24.11.1/
-│   │   ├── bin/           # node, npm, npx executables
+│   │   ├── bin/
+│   │   │   ├── node
+│   │   │   ├── npm
+│   │   │   └── npx
 │   │   └── lib/
 │   └── v22.x.x/
-├── current/               # Symlink to active version (homologated)
-│   ├── bin/               # Points to active version's bin/
-│   └── .nvm-version       # Persisted current version
-├── cache/                 # Downloaded archives
-└── alias/                 # Version aliases (future)
+├── current/                   # Symlink to active version (homologated)
+│   ├── bin/                   # Points to active version's bin/
+│   │   ├── node
+│   │   ├── npm
+│   │   └── npx
+│   └── .nvm-version           # Persisted current version
+├── cache/                     # Downloaded archives
+└── alias/                     # Version aliases (future)
 ```
 
-**Note:** On Windows, nvm executable goes in `%NVM_HOME%\bin\`. On Linux/macOS, copy it to `~/.local/bin/` or another PATH directory.
+**Note:** This structure is identical on Windows, Linux, and macOS for consistency.
 
 ## Additional Resources
 

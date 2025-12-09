@@ -115,13 +115,16 @@ fi
 info "SHA256: $CHECKSUM"
 
 # Instalar binario
-EXE_PATH="$INSTALL_DIR/nvm"
+EXE_PATH="$HOME/.nvm/bin/nvm"
 info ""
 info "Instalando binario..."
 
+# Crear directorio bin si no existe
+mkdir -p "$HOME/.nvm/bin"
+
 # Hacer backup si existe
 if [ -f "$EXE_PATH" ]; then
-    BACKUP_PATH="$INSTALL_DIR/nvm.bak"
+    BACKUP_PATH="$HOME/.nvm/bin/nvm.bak"
     mv "$EXE_PATH" "$BACKUP_PATH"
     warning "⚠ Backup creado: nvm.bak"
 fi
