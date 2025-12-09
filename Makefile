@@ -51,7 +51,7 @@ build-debug: ## Compilar debug
 build-all: ## Compilar todos los targets (requiere PowerShell)
 	@echo "$(CYAN)Compilando todos los targets...$(NC)"
 	@if command -v pwsh >/dev/null 2>&1; then \
-		$(POWERSHELL) -Command "& './scripts/build-releases.ps1' -OutputDir '$(OUTPUT_DIR)'"; \
+		$(POWERSHELL) -Command "& './scripts/build/build-releases.ps1' -OutputDir '$(OUTPUT_DIR)'"; \
 	else \
 		echo "$(RED)Error: PowerShell no encontrado$(NC)"; \
 		exit 1; \
@@ -60,7 +60,7 @@ build-all: ## Compilar todos los targets (requiere PowerShell)
 build-windows: ## Compilar solo targets de Windows
 	@echo "$(CYAN)Compilando targets de Windows...$(NC)"
 	@if command -v pwsh >/dev/null 2>&1; then \
-		$(POWERSHELL) -Command "& './scripts/build-releases.ps1' -OutputDir '$(OUTPUT_DIR)'"; \
+		$(POWERSHELL) -Command "& './scripts/build/build-releases.ps1' -OutputDir '$(OUTPUT_DIR)'"; \
 	else \
 		echo "$(RED)Error: PowerShell no encontrado$(NC)"; \
 		exit 1; \
@@ -91,7 +91,7 @@ test-verbose: ## Ejecutar tests con output detallado
 validate-release: ## Validar artifacts del release
 	@if command -v pwsh >/dev/null 2>&1; then \
 		echo "$(CYAN)Validando release...$(NC)"; \
-		$(POWERSHELL) -Command "& './scripts/validate-release.ps1' -ReleaseDir '$(OUTPUT_DIR)'"; \
+		$(POWERSHELL) -Command "& './scripts/release/validate-release.ps1' -ReleaseDir '$(OUTPUT_DIR)'"; \
 	else \
 		echo "$(RED)Error: PowerShell no encontrado$(NC)"; \
 		exit 1; \
@@ -100,7 +100,7 @@ validate-release: ## Validar artifacts del release
 validate-strict: ## Validar release en modo estricto
 	@if command -v pwsh >/dev/null 2>&1; then \
 		echo "$(CYAN)Validando release (strict)...$(NC)"; \
-		$(POWERSHELL) -Command "& './scripts/validate-release.ps1' -ReleaseDir '$(OUTPUT_DIR)' -Strict"; \
+		$(POWERSHELL) -Command "& './scripts/release/validate-release.ps1' -ReleaseDir '$(OUTPUT_DIR)' -Strict"; \
 	else \
 		echo "$(RED)Error: PowerShell no encontrado$(NC)"; \
 		exit 1; \
@@ -115,7 +115,7 @@ release: build-all validate-strict ## Build + Validar + Publicar
 publish-release: ## Publicar release en GitHub
 	@if command -v pwsh >/dev/null 2>&1; then \
 		echo "$(CYAN)Publicando release $(VERSION)...$(NC)"; \
-		$(POWERSHELL) -Command "& './scripts/publish-release.ps1' -Version v$(VERSION)"; \
+		$(POWERSHELL) -Command "& './scripts/release/publish-release.ps1' -Version v$(VERSION)"; \
 	else \
 		echo "$(RED)Error: PowerShell no encontrado$(NC)"; \
 		exit 1; \
@@ -124,7 +124,7 @@ publish-release: ## Publicar release en GitHub
 publish-draft: ## Publicar como draft
 	@if command -v pwsh >/dev/null 2>&1; then \
 		echo "$(CYAN)Publicando draft release $(VERSION)...$(NC)"; \
-		$(POWERSHELL) -Command "& './scripts/publish-release.ps1' -Version v$(VERSION) -Draft"; \
+		$(POWERSHELL) -Command "& './scripts/release/publish-release.ps1' -Version v$(VERSION) -Draft"; \
 	else \
 		echo "$(RED)Error: PowerShell no encontrado$(NC)"; \
 		exit 1; \
@@ -133,7 +133,7 @@ publish-draft: ## Publicar como draft
 publish-prerelease: ## Publicar como pre-release
 	@if command -v pwsh >/dev/null 2>&1; then \
 		echo "$(CYAN)Publicando pre-release $(VERSION)...$(NC)"; \
-		$(POWERSHELL) -Command "& './scripts/publish-release.ps1' -Version v$(VERSION) -PreRelease"; \
+		$(POWERSHELL) -Command "& './scripts/release/publish-release.ps1' -Version v$(VERSION) -PreRelease"; \
 	else \
 		echo "$(RED)Error: PowerShell no encontrado$(NC)"; \
 		exit 1; \
@@ -142,7 +142,7 @@ publish-prerelease: ## Publicar como pre-release
 tag-only: ## Crear solo Git tag (sin publicar)
 	@if command -v pwsh >/dev/null 2>&1; then \
 		echo "$(CYAN)Creando Git tag...$(NC)"; \
-		$(POWERSHELL) -Command "& './scripts/publish-release.ps1' -Version v$(VERSION) -TagOnly"; \
+		$(POWERSHELL) -Command "& './scripts/release/publish-release.ps1' -Version v$(VERSION) -TagOnly"; \
 	else \
 		echo "$(RED)Error: PowerShell no encontrado$(NC)"; \
 		exit 1; \
@@ -214,3 +214,4 @@ setup: install-targets ## Setup inicial (instalar targets)
 
 .PHONY: all
 all: clean check build-all validate-release ## Complete workflow
+
