@@ -644,25 +644,30 @@ pub fn full_uninstall_cleanup(install_dir: Option<&Path>, _data_dir: Option<&Pat
 }
 
 // Unix versions (stub implementations for non-Windows)
+// Reserved for future phases (automated shell configuration)
 #[cfg(not(windows))]
+#[allow(dead_code)]
 pub fn add_to_path(_install_dir: &Path) -> Result<()> {
     // En Unix, esto se hace a través de shell config files
     Ok(())
 }
 
 #[cfg(not(windows))]
+#[allow(dead_code)]
 pub fn remove_from_path(_install_dir: &Path) -> Result<()> {
     // En Unix, esto se hace a través de shell config files
     Ok(())
 }
 
 #[cfg(not(windows))]
+#[allow(dead_code)]
 pub fn set_nvm_dir(_nvm_dir: &Path) -> Result<()> {
     // En Unix, esto se hace a través de shell config files
     Ok(())
 }
 
 #[cfg(not(windows))]
+#[allow(dead_code)]
 pub fn remove_nvm_dir() -> Result<()> {
     // En Unix, esto se hace a través de shell config files
     Ok(())

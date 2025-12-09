@@ -201,6 +201,8 @@ impl VersionFilter {
 }
 
 /// Format version for display with color coding
+/// Reserved for future phases (enhanced UI formatting)
+#[allow(dead_code)]
 pub fn format_version_display(version: &NodeVersion) -> String {
     let version_str = &version.version;
 
