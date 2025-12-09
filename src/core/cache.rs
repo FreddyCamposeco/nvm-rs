@@ -163,6 +163,8 @@ fn calculate_dir_size(path: &std::path::Path) -> Result<u64> {
 /// Información del caché
 #[derive(Debug, Clone)]
 pub struct CacheInfo {
+    /// Whether cache exists (reserved for future diagnostics)
+    #[allow(dead_code)]
     pub exists: bool,
     pub size_bytes: u64,
     pub last_updated: Option<u64>, // En segundos
