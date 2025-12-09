@@ -1,6 +1,6 @@
 # nvm-rs
 
-🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma (v0.5.0)
+🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma (v0.5.1)
 
 [![Version](https://img.shields.io/github/v/release/FreddyCamposeco/nvm-rs?label=version)](https://github.com/FreddyCamposeco/nvm-rs/releases/latest) [![Rust](https://img.shields.io/badge/rust-1.91%2B-orange.svg)](https://www.rust-lang.org) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)](https://github.com/FreddyCamposeco/nvm-rs/releases) [![Downloads](https://img.shields.io/github/downloads/FreddyCamposeco/nvm-rs/total)](https://github.com/FreddyCamposeco/nvm-rs/releases)
 
@@ -18,7 +18,7 @@
 
 ## 🚀 Estado del Proyecto
 
-**Versión**: 0.5.0
+**Versión**: 0.5.1
 **Estado**: ✅ Producción - Totalmente Funcional
 **Plataformas**: Windows, Linux, macOS (x64 y ARM64)
 
@@ -50,7 +50,7 @@
 iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 
 # O con opciones personalizadas
-$env:NVM_VERSION="v0.5.0"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
+$env:NVM_VERSION="v0.5.1"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 ```
 
 **Linux / macOS (Bash)**
@@ -60,7 +60,7 @@ $env:NVM_VERSION="v0.5.0"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.
 curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 
 # O con opciones personalizadas
-export NVM_VERSION="v0.5.0"
+export NVM_VERSION="v0.5.1"
 export NVM_INSTALL_DIR="$HOME/.nvm"
 curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 ```
@@ -70,8 +70,10 @@ curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts
 - ✅ Detecta tu sistema operativo y arquitectura
 - ✅ Descarga la versión correcta desde GitHub Releases
 - ✅ Verifica la integridad con checksums SHA256
-- ✅ Instala el binario en `%USERPROFILE%\.nvm\bin` (Windows) o `$NVM_HOME/bin` (Unix)
+- ✅ Instala el binario de nvm en `$NVM_HOME/bin` (homologado en todas plataformas)
 - ✅ Configura variables de entorno (`NVM_HOME`, `NVM_BIN`, `NVM_NODE`)
+- ✅ Crea automáticamente estructura de directorios (`versions/`, `current/bin/`, `cache/`, `alias/`)
+- ✅ Agrega `$NVM_HOME/bin` y `$NVM_HOME/current/bin` al PATH
 - ✅ Crea backup de versiones anteriores
 
 ### Gestión de nvm
@@ -196,31 +198,32 @@ nvm-rs utiliza una estructura consistente entre plataformas:
 ### Linux / macOS
 
 ```
-~/.nvm/                       # NVM_HOME
-├── bin/                       # $NVM_BIN
-│   └── nvm                   # Binario de nvm
-├── current/
-│   └── bin/                    # Symlink → v{version}/bin ($NVM_NODE)
-│       ├── node
-│       ├── npm
-│       └── npx
-├── v18.17.0/                   # Versión instalada
-│   ├── bin/
+~/.nvm/                        # NVM_HOME
+├── bin/                        # $NVM_BIN (binario de nvm)
+│   └── nvm
+├── versions/                   # Versiones instaladas
+│   └── v18.17.0/
+│       ├── bin/
+│       │   ├── node
+│       │   ├── npm
+│       │   └── npx
+│       └── lib/
+├── current/                    # Symlink a versión activa
+│   ├── bin/                    # Symlink → ../versions/v{version}/bin ($NVM_NODE)
 │   │   ├── node
 │   │   ├── npm
 │   │   └── npx
-│   └── lib/
-└── downloads/                  # Archivos temporales
-
-~/.local/bin/
-└── nvm                         # Binario de nvm
+│   └── .nvm-version            # Archivo con versión persistida
+├── cache/                      # Archivos descargados
+├── alias/                      # Aliases personalizados
+└── .version_cache.json         # Cache de versiones remotas
 ```
 
 **Variables de entorno configuradas:**
 
-- `NVM_HOME`: Directorio base (`%USERPROFILE%\.nvm` o `~/.nvm`)
-- `NVM_BIN`: Binario de nvm (`$NVM_HOME/bin`)
-- `NVM_NODE`: Node.js activo (`$NVM_HOME/current/bin`)
+- `NVM_HOME`: Directorio base (homologado: `%USERPROFILE%\.nvm` en Windows, `~/.nvm` en Linux/macOS)
+- `NVM_BIN`: Binario de nvm (homologado: `$NVM_HOME/bin` en todas plataformas)
+- `NVM_NODE`: Node.js activo (homologado: `$NVM_HOME/current/bin` en todas plataformas)
 - `PATH`: Incluye `$NVM_BIN` (nvm) y `$NVM_NODE` (Node.js activo)
 
 Ver [PATH_STRUCTURE.md](PATH_STRUCTURE.md) para detalles completos sobre la estructura homologada.
