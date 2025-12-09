@@ -45,12 +45,18 @@ This is a maintenance release focused on repository organization, infrastructure
 ### Windows
 
 - **nvm-v0.5.1-windows-x64.exe** - Windows 64-bit executable
-  - Size: 4.24 MB
+  - Size: 4.13 MiB
   - SHA256: `11719B494358D13C85C5E8ED9978656C92D401EC89FC03E7424A05AACC9FCD19`
 
-### Linux & macOS
+### Linux
 
-Linux and macOS builds will be added in a future release.
+- **nvm-v0.5.1-linux-x64** - Linux 64-bit executable
+  - Size: 3.42 MiB
+  - SHA256: `F8B493F0F0B5B75448CDAA68061916A4D4AE306435C1AF22727CDD10D4A8B200`
+
+### macOS
+
+macOS builds will be added in a future release.
 
 ## 📥 Installation
 
@@ -60,12 +66,27 @@ Linux and macOS builds will be added in a future release.
 irm https://github.com/FreddyCamposeco/nvm-rs/releases/download/v0.5.1/install.ps1 | iex
 ```
 
+### Linux / macOS (Bash)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
+```
+
 ### Manual Installation
+
+#### Windows
 
 1. Download `nvm-v0.5.1-windows-x64.exe`
 2. Rename to `nvm.exe`
 3. Place in desired directory (e.g., `C:\Program Files\nvm`)
 4. Add directory to system PATH
+
+#### Linux / macOS
+
+1. Download `nvm-v0.5.1-linux-x64`
+2. Make it executable: `chmod +x nvm-v0.5.1-linux-x64`
+3. Install to `~/.nvm/bin/nvm`: `cp nvm-v0.5.1-linux-x64 ~/.nvm/bin/nvm`
+4. Add `~/.nvm/bin` to your PATH
 
 ## ✅ Verification
 
