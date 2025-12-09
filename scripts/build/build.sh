@@ -141,6 +141,26 @@ if ! command -v cargo &> /dev/null; then
 fi
 print_success "Cargo encontrado: $(cargo --version)"
 
+# Check dependencies for Linux
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Check pkg-config
+    if ! command -v pkg-config &> /dev/null; then
+        print_warning "pkg-config no encontrado"
+        print_info "Ejecuta para instalar dependencias: sudo bash ./scripts/setup-linux-build-env.sh"
+        exit 1
+    fi
+    print_success "pkg-config encontrado: $(pkg-config --version)"
+
+    # Check OpenSSL
+    if ! pkg-config --exists openssl 2>/dev/null; then
+        print_warning "OpenSSL no encontrado o no configurado"
+        print_info "Ejecuta para instalar dependencias: sudo bash ./scripts/setup-linux-build-env.sh"
+        exit 1
+    fi
+    OPENSSL_VER=$(pkg-config --modversion openssl 2>/dev/null || echo "desconocida")
+    print_success "OpenSSL encontrado: $OPENSSL_VER"
+fi
+
 # Check if running in PowerShell
 if command -v pwsh &> /dev/null; then
     print_info "PowerShell encontrado - usando build-releases.ps1"
