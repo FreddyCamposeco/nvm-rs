@@ -2,9 +2,18 @@
 
 ## Current Version
 
-**v0.5.0** (2025-12-07)
+**v0.5.1** (2025-12-08)
 
 ## Version History
+
+### v0.5.1 - December 8, 2025
+
+- 🗂️ Repository reorganization for better maintainability
+- 📝 Improved script documentation with category-specific READs
+- 🐛 Fix in install.ps1 for better asset detection
+- ✨ Scripts organized by categories (build/, install/, release/)
+- 🧹 Repository cleanup and optimization
+- Status: **PRODUCTION READY**
 
 ### v0.5.0 - December 7, 2025
 

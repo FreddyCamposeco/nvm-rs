@@ -1,17 +1,17 @@
 {
-  "build_type": "release",
-  "version": "0.5.0",
   "with_self_update": {
     "IsPresent": false
   },
+  "build_type": "release",
   "binaries": [
     {
+      "target_triple": "x86_64-pc-windows-msvc",
+      "name": "nvm-v0.5.1-windows-x64.exe",
       "size": 4337152,
-      "name": "nvm-v0.5.0-windows-x64.exe",
       "platform": "windows-x64",
-      "sha256": "6314B466DC560E825544438ACD3676638F80FCA01177D94F7589FAFEC5452572",
-      "target_triple": "x86_64-pc-windows-msvc"
+      "sha256": "11719B494358D13C85C5E8ED9978656C92D401EC89FC03E7424A05AACC9FCD19"
     }
   ],
-  "release_date": "2025-12-07T23:02:38.5255683-06:00"
+  "version": "0.5.1",
+  "release_date": "2025-12-08T18:46:52.3507582-06:00"
 }
