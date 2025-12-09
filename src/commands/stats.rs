@@ -44,7 +44,7 @@ pub async fn get_stats(config: &Config) -> anyhow::Result<Stats> {
     };
 
     // Versiones instaladas
-    let versions_dir = nvm_dir.join("versions");
+    let versions_dir = config.versions_dir();
     let mut installed_count = 0;
     let mut total_size = 0;
 
@@ -89,7 +89,7 @@ pub async fn get_stats(config: &Config) -> anyhow::Result<Stats> {
 
 /// Obtener versión activa
 fn get_active_version(config: &Config) -> Option<String> {
-    let current_link = config.nvm_dir.join("versions").join("current");
+    let current_link = config.current_dir();
 
     #[cfg(target_os = "windows")]
     {

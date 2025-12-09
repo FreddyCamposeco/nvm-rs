@@ -70,7 +70,7 @@ impl Config {
     }
 
     pub fn versions_dir(&self) -> PathBuf {
-        self.nvm_dir.clone()
+        self.nvm_dir.join("versions")
     }
 
     /// Returns the NVM_BIN directory: $NVM_HOME/bin (where nvm executable is located)
