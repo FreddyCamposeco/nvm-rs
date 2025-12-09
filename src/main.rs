@@ -317,7 +317,7 @@ async fn main() -> Result<()> {
             let symlink_target = &version_dir;
 
             #[cfg(not(windows))]
-            let symlink_target = version_dir.join("bin");
+            let symlink_target = &version_dir.join("bin");
 
             symlink::create_or_update_symlink(symlink_target, &current_link)
                 .context("Failed to create symlink")?;

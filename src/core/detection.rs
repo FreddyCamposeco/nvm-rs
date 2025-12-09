@@ -1,8 +1,6 @@
 // Module for detecting system Node.js installations
 use std::path::PathBuf;
 use std::process::Command;
-
-#[cfg(target_os = "windows")]
 use std::env;
 
 use colored::Colorize;
