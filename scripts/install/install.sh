@@ -53,7 +53,15 @@ else
 fi
 
 RELEASE_DATA=$(curl -fsSL "$API_URL" -H "User-Agent: nvm-rs-installer") || error "Error al obtener información de la release"
-RELEASE_VERSION=$(echo "$RELEASE_DATA" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4)
+
+# Parsear JSON - intentar con jq primero, luego con grep
+if command -v jq &> /dev/null; then
+    RELEASE_VERSION=$(echo "$RELEASE_DATA" | jq -r '.tag_name')
+    DOWNLOAD_URL=$(echo "$RELEASE_DATA" | jq -r ".assets[] | select(.name == \"nvm-${VERSION}-${OS}-${ARCH}\") | .browser_download_url")
+else
+    # Fallback a grep si jq no está disponible
+    RELEASE_VERSION=$(echo "$RELEASE_DATA" | grep -o '"tag_name":"[^"]*"' | head -1 | cut -d'"' -f4)
+fi
 
 if [ -z "$RELEASE_VERSION" ]; then
     error "No se pudo obtener la versión de la release"
@@ -71,8 +79,10 @@ fi
 ASSET_NAME="nvm-${RELEASE_VERSION}-${OS}-${ARCH}${SUFFIX}"
 info "Asset a descargar: $ASSET_NAME"
 
-# Buscar URL de descarga
-DOWNLOAD_URL=$(echo "$RELEASE_DATA" | grep -o "\"browser_download_url\": \"[^\"]*$ASSET_NAME\"" | cut -d'"' -f4)
+# Buscar URL de descarga (si no fue obtenida con jq)
+if [ -z "$DOWNLOAD_URL" ]; then
+    DOWNLOAD_URL=$(echo "$RELEASE_DATA" | grep -o "https://github.com/FreddyCamposeco/nvm-rs/releases/download/[^\"]*${ASSET_NAME}" | head -1)
+fi
 
 if [ -z "$DOWNLOAD_URL" ]; then
     error "Asset $ASSET_NAME no encontrado en la release"
