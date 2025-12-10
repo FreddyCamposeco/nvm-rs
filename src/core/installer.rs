@@ -272,7 +272,7 @@ pub fn is_in_path(install_dir: &Path) -> bool {
 }
 
 /// Genera instrucciones para agregar al PATH
-pub fn get_path_instructions(_install_dir: &Path) -> String {
+pub fn get_path_instructions(install_dir: &Path) -> String {
     #[cfg(windows)]
     {
         format!(
