@@ -1,6 +1,85 @@
 # Changelog
 
-## v0.3.0 (En Desarrollo)
+Historial de cambios de nvm-rs. Este archivo documenta todas las modificaciones importantes.
+
+## [v0.6.0] - 2026-02-02
+
+### Added
+- Code cleanup and reorganization
+- Simplified documentation structure
+- Unified CHANGELOG format
+
+### Changed
+- Removed temporary documentation files
+- Consolidated release notes into single CHANGELOG.md
+- Cleaned up repository structure
+
+### Fixed
+- Improved code quality with focused documentation
+- Streamlined release process
+
+### Build Quality
+- **Zero compiler warnings** ✅
+- All tests passing ✅
+- Binary: 4.13 MB (release, stripped)
+
+---
+
+## [v0.5.1] - 2025-12-09
+
+### Added
+- Phase 4: Typed Error Handling implementation
+- Custom error types for all core modules (8+ error types)
+- Comprehensive error context in error messages
+
+### Changed
+- Refactored error handling to use typed errors across all modules
+- Improved parameter types for idiomatic Rust
+- Updated VERSION.md with Phase 4 completion
+
+### Fixed
+- Fixed 12 clippy warnings
+- Removed false-positive dead_code annotations
+- Fixed test imports and error handling patterns
+
+### Removed
+- Removed 4 unused config methods
+- Removed 6+ unnecessary annotations
+
+### Build Quality
+- **Zero compiler warnings** ✅
+- All tests passing ✅
+- Binary: 4.13 MB (release, stripped)
+
+---
+
+## [v0.5.0] - 2025-12-08
+
+### Added
+- Repository reorganization (scripts by category)
+- Improved script documentation
+
+### Fixed
+- Better asset detection in install.ps1
+
+---
+
+## [v0.4.0] - 2025-12-07
+
+### Added
+- System Node.js Detection module
+- `doctor --all` and `doctor --system` commands
+- `stats` command with JSON export
+
+### Changed
+- Cache TTL: 15 min → 24 hours
+
+---
+
+## [v0.3.0] - 2025-12-06
+
+### Added
+- Full uninstall cleanup feature (Deprecated)
 
 **Status**: 🚀 Próximo Release
 

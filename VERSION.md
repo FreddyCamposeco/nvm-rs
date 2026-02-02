@@ -2,17 +2,38 @@
 
 ## Current Version
 
-**v0.5.1** (2025-12-08)
+**v0.6.0** (2026-02-02)
 
 ## Version History
 
-### v0.5.1 - December 8, 2025
+### v0.6.0 - February 2, 2026
 
-- 🗂️ Repository reorganization for better maintainability
-- 📝 Improved script documentation with category-specific READs
-- 🐛 Fix in install.ps1 for better asset detection
+#### 📦 Release: Code Cleanup & Repository Reorganization
+
+**Improvements:**
+- ✅ Removed temporary documentation files
+- ✅ Consolidated release notes into single CHANGELOG.md
+- ✅ Cleaned up repository structure
+- ✅ Simplified documentation organization
+
+**Status**: Production Ready - Code Quality Focus
+
+---
+
+### v0.5.1 - December 9, 2025
+
+#### 🔧 Phase 4: Typed Error Handling & Code Cleanup
+
+**Error Handling:**
+- ✅ Typed error handling with `thiserror`
+- ✅ 8+ custom error types
+- ✅ Improved error context
+
+**Code Quality:**
+- ✅ Removed 4 unused methods
+- ✅ Fixed 12 clippy warnings
+- ✅ Zero compiler warnings
 - ✨ Scripts organized by categories (build/, install/, release/)
-- 🧹 Repository cleanup and optimization
 - Status: **PRODUCTION READY**
 
 ### v0.5.0 - December 7, 2025
@@ -51,11 +72,12 @@
 
 ## Compilation Status
 
-- **Latest Build**: v0.5.0
-- **Compilation Time**: 25.96s (release mode)
+- **Latest Build**: v0.5.1 (Phase 4 Complete)
+- **Compilation Time**: ~0.8s (debug), ~8s (release with LTO)
 - **Errors**: 0 ✅
 - **Warnings**: 0 ✅
 - **Tests**: All passing ✅
+- **Binary Size**: ~4.13 MB (release, stripped)
 
 ## Release Notes URL
 

@@ -215,6 +215,7 @@ pub fn remove_nvm_dir() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::github::get_platform_asset_name;
 
     #[test]
     fn test_get_platform_asset_name() {

@@ -104,7 +104,7 @@ pub async fn download_node_archive(
     let url = get_download_url(version, config);
     
     // Extraer el nombre del archivo de la URL
-    let filename = url.split('/').last().unwrap();
+    let filename = url.split('/').next_back().unwrap();
     let dest_path = dest_dir.join(filename);
     
     // Si el archivo ya existe, verificar si es válido

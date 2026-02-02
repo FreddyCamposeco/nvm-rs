@@ -138,7 +138,7 @@ pub fn get_cache_total_size(config: &Config) -> Result<u64> {
 
     if let Some(dir) = cache_dir {
         if dir.exists() {
-            return Ok(calculate_dir_size(&dir)?);
+            return calculate_dir_size(&dir);
         }
     }
 
