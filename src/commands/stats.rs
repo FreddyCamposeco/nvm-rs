@@ -50,13 +50,11 @@ pub async fn get_stats(config: &Config) -> anyhow::Result<Stats> {
     let mut total_size = 0;
 
     if versions_dir.exists() {
-        for entry in fs::read_dir(&versions_dir)? {
-            if let Ok(entry) = entry {
-                let path = entry.path();
-                if path.is_dir() {
-                    installed_count += 1;
-                    total_size += calculate_dir_size(&path)?;
-                }
+        for entry in fs::read_dir(&versions_dir)?.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                installed_count += 1;
+                total_size += calculate_dir_size(&path)?;
             }
         }
     }
@@ -146,7 +144,7 @@ pub fn display_stats(stats: &Stats) {
     println!("   {} {}", "Defined:".bright_black(), stats.aliases_count);
 
     println!("\n{}", "💾 Cache:".yellow());
-    println!("   {} {}", "Location:".bright_black(), "~/.nvm/cache");
+    println!("   {} ~/.nvm/cache", "Location:".bright_black());
     println!(
         "   {} {}",
         "Size:".bright_black(),

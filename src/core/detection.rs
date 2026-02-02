@@ -1,5 +1,5 @@
 // Module for detecting system Node.js installations
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::env;
 
@@ -168,7 +168,7 @@ fn get_node_version(node_path: &PathBuf) -> Option<String> {
 }
 
 /// Obtener versión de npm
-fn get_npm_version(node_path: &PathBuf) -> Option<String> {
+fn get_npm_version(node_path: &Path) -> Option<String> {
     // Assumir que npm está en el mismo directorio que node
     let node_dir = node_path.parent()?;
     let npm_path = if cfg!(target_os = "windows") {
@@ -195,7 +195,7 @@ fn get_npm_version(node_path: &PathBuf) -> Option<String> {
 }
 
 /// Verificar si la ruta es manejada por NVM
-fn is_nvm_managed(path: &PathBuf) -> bool {
+fn is_nvm_managed(path: &Path) -> bool {
     let path_str = path.to_string_lossy().to_lowercase();
     path_str.contains(".nvm") || path_str.contains("nvm")
 }

@@ -86,13 +86,13 @@ pub fn resolve_version(version: &str, available_versions: &[NodeVersion]) -> Res
             if let Some(latest) = available_versions.first() {
                 return Ok(latest.version.clone());
             }
-            return Err(message("No versions available"));
+            Err(message("No versions available"))
         }
         "lts" => {
             if let Some(lts_version) = available_versions.iter().find(|v| v.lts.is_lts()) {
                 return Ok(lts_version.version.clone());
             }
-            return Err(message("No LTS version found"));
+            Err(message("No LTS version found"))
         }
         alias if alias.starts_with("lts/") => {
             let lts_name = &alias[4..];
@@ -105,7 +105,7 @@ pub fn resolve_version(version: &str, available_versions: &[NodeVersion]) -> Res
             }) {
                 return Ok(lts_version.version.clone());
             }
-            return Err(message(format!("LTS version '{}' not found", lts_name)));
+            Err(message(format!("LTS version '{}' not found", lts_name)))
         }
         _ => {
             // Buscar por nombre de LTS directamente
@@ -119,7 +119,7 @@ pub fn resolve_version(version: &str, available_versions: &[NodeVersion]) -> Res
                 return Ok(lts_version.version.clone());
             }
 
-            return Err(message(format!("Unknown version or alias: {}", version)));
+            Err(message(format!("Unknown version or alias: {}", version)))
         }
     }
 }
@@ -307,7 +307,7 @@ pub fn format_installed_version(
 }
 
 /// Ordena versiones semánticamente (más reciente primero)
-pub fn sort_versions(versions: &mut Vec<String>) {
+pub fn sort_versions(versions: &mut [String]) {
     versions.sort_by(|a, b| {
         let parse_version = |v: &str| -> (u32, u32, u32) {
             let v_clean = v.strip_prefix('v').unwrap_or(v);
@@ -317,7 +317,7 @@ pub fn sort_versions(versions: &mut Vec<String>) {
                 .collect();
 
             (
-                parts.get(0).copied().unwrap_or(0),
+                parts.first().copied().unwrap_or(0),
                 parts.get(1).copied().unwrap_or(0),
                 parts.get(2).copied().unwrap_or(0),
             )
