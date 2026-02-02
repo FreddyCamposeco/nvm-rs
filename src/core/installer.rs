@@ -147,6 +147,18 @@ pub fn set_nvm_home(nvm_dir: &Path) -> Result<()> {
     crate::platform::windows::env::set_nvm_home(nvm_dir)
 }
 
+/// Establece la variable de entorno NVM_BIN
+#[cfg(windows)]
+pub fn set_nvm_bin(nvm_bin: &Path) -> Result<()> {
+    crate::platform::windows::env::set_nvm_bin(nvm_bin)
+}
+
+/// Establece la variable de entorno NVM_NODE
+#[cfg(windows)]
+pub fn set_nvm_node(nvm_node: &Path) -> Result<()> {
+    crate::platform::windows::env::set_nvm_node(nvm_node)
+}
+
 /// Elimina la variable de entorno NVM_HOME
 #[cfg(windows)]
 #[allow(dead_code)]
