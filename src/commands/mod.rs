@@ -1,2 +1,10 @@
 // Commands module
 pub mod stats;
+pub mod install;
+pub mod uninstall;
+pub mod use_version;
+pub mod list;
+pub mod alias;
+pub mod doctor;
+pub mod self_management;
+pub mod misc;

@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use crate::error::{with_context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -34,15 +34,23 @@ impl Aliases {
             return Ok(Self::new());
         }
 
-        let content = fs::read_to_string(&path)
-            .with_context(|| format!("Failed to read aliases file: {}", path.display()))?;
+        let content = fs::read_to_string(&path).map_err(|e| {
+            with_context(
+                &format!("Failed to read aliases file: {}", path.display()),
+                e,
+            )
+        })?;
 
         if content.trim().is_empty() {
             return Ok(Self::new());
         }
 
-        let aliases: Aliases = serde_json::from_str(&content)
-            .with_context(|| format!("Failed to parse aliases file: {}", path.display()))?;
+        let aliases: Aliases = serde_json::from_str(&content).map_err(|e| {
+            with_context(
+                &format!("Failed to parse aliases file: {}", path.display()),
+                e,
+            )
+        })?;
 
         Ok(aliases)
     }
@@ -53,15 +61,23 @@ impl Aliases {
 
         // Crear directorio si no existe
         if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)
-                .with_context(|| format!("Failed to create directory: {}", parent.display()))?;
+            fs::create_dir_all(parent).map_err(|e| {
+                with_context(
+                    &format!("Failed to create directory: {}", parent.display()),
+                    e,
+                )
+            })?;
         }
 
         let content = serde_json::to_string_pretty(&self)
-            .context("Failed to serialize aliases")?;
+            .map_err(|e| with_context("Failed to serialize aliases", e))?;
 
-        fs::write(&path, content)
-            .with_context(|| format!("Failed to write aliases file: {}", path.display()))?;
+        fs::write(&path, content).map_err(|e| {
+            with_context(
+                &format!("Failed to write aliases file: {}", path.display()),
+                e,
+            )
+        })?;
 
         Ok(())
     }

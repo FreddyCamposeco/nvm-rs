@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use crate::error::{message, with_context, Result};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -27,20 +27,26 @@ pub fn extract_archive(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> 
 
 #[cfg(target_os = "windows")]
 fn extract_zip(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
-    let file = fs::File::open(archive_path).context(format!(
-        "Failed to open archive: {}",
-        archive_path.display()
-    ))?;
+    let file = fs::File::open(archive_path).map_err(|e| {
+        with_context(
+            &format!("Failed to open archive: {}", archive_path.display()),
+            e,
+        )
+    })?;
 
-    let mut archive = ZipArchive::new(file).context("Failed to read ZIP archive")?;
+    let mut archive = ZipArchive::new(file)
+        .map_err(|e| with_context("Failed to read ZIP archive", e))?;
 
     // Crear directorio de destino
-    fs::create_dir_all(dest_dir).context("Failed to create destination directory")?;
+    fs::create_dir_all(dest_dir)
+        .map_err(|e| with_context("Failed to create destination directory", e))?;
 
     let mut extracted_root = None;
 
     for i in 0..archive.len() {
-        let mut file = archive.by_index(i).context("Failed to read ZIP entry")?;
+        let mut file = archive
+            .by_index(i)
+            .map_err(|e| with_context("Failed to read ZIP entry", e))?;
         let outpath = match file.enclosed_name() {
             Some(path) => dest_dir.join(path),
             None => continue,
@@ -55,49 +61,62 @@ fn extract_zip(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
 
         if file.name().ends_with('/') {
             // Es un directorio
-            fs::create_dir_all(&outpath).context("Failed to create directory")?;
+            fs::create_dir_all(&outpath)
+                .map_err(|e| with_context("Failed to create directory", e))?;
         } else {
             // Es un archivo
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
-                    fs::create_dir_all(p).context("Failed to create parent directory")?;
+                    fs::create_dir_all(p)
+                        .map_err(|e| with_context("Failed to create parent directory", e))?;
                 }
             }
 
-            let mut outfile = fs::File::create(&outpath)
-                .context(format!("Failed to create file: {}", outpath.display()))?;
+            let mut outfile = fs::File::create(&outpath).map_err(|e| {
+                with_context(
+                    &format!("Failed to create file: {}", outpath.display()),
+                    e,
+                )
+            })?;
 
-            std::io::copy(&mut file, &mut outfile).context("Failed to extract file")?;
+            std::io::copy(&mut file, &mut outfile)
+                .map_err(|e| with_context("Failed to extract file", e))?;
         }
     }
 
     println!("Extraction complete");
 
-    extracted_root.ok_or_else(|| anyhow::anyhow!("No files extracted from archive"))
+    extracted_root.ok_or_else(|| message("No files extracted from archive"))
 }
 
 #[cfg(not(target_os = "windows"))]
 fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
-    let file = fs::File::open(archive_path).context(format!(
-        "Failed to open archive: {}",
-        archive_path.display()
-    ))?;
+    let file = fs::File::open(archive_path).map_err(|e| {
+        with_context(
+            &format!("Failed to open archive: {}", archive_path.display()),
+            e,
+        )
+    })?;
 
     let tar = GzDecoder::new(file);
     let mut archive = Archive::new(tar);
 
     // Crear directorio de destino
-    fs::create_dir_all(dest_dir).context("Failed to create destination directory")?;
+    fs::create_dir_all(dest_dir)
+        .map_err(|e| with_context("Failed to create destination directory", e))?;
 
     let mut extracted_root = None;
 
     // Extraer archivos
     let mut entry_count = 0;
-    for entry in archive.entries().context("Failed to read tar entries")? {
-        let mut entry = entry.context("Failed to read tar entry")?;
+    for entry in archive
+        .entries()
+        .map_err(|e| with_context("Failed to read tar entries", e))?
+    {
+        let mut entry = entry.map_err(|e| with_context("Failed to read tar entry", e))?;
         let path = entry
             .path()
-            .context("Failed to get entry path")?
+            .map_err(|e| with_context("Failed to get entry path", e))?
             .to_path_buf();
 
         // Guardar el primer directorio como raíz extraída
@@ -127,10 +146,15 @@ fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
                 if entry_count <= 5 {
                     println!("    Creating parent: {}", parent.display());
                 }
-                fs::create_dir_all(parent).context(format!(
-                    "Failed to create parent directory: {}",
-                    parent.display()
-                ))?;
+                fs::create_dir_all(parent).map_err(|e| {
+                    with_context(
+                        &format!(
+                            "Failed to create parent directory: {}",
+                            parent.display()
+                        ),
+                        e,
+                    )
+                })?;
             }
         } else {
             println!("    WARNING: No parent for {}", outpath.display());
@@ -143,19 +167,28 @@ fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
                 if entry_count <= 5 {
                     println!("    Creating directory");
                 }
-                fs::create_dir_all(&outpath)
-                    .context(format!("Failed to create directory: {}", outpath.display()))?;
+                fs::create_dir_all(&outpath).map_err(|e| {
+                    with_context(
+                        &format!("Failed to create directory: {}", outpath.display()),
+                        e,
+                    )
+                })?;
             }
         } else {
             // Para archivos, usar unpack
             if entry_count <= 5 {
                 println!("    Unpacking file");
             }
-            entry.unpack(&outpath).context(format!(
-                "Failed to extract file: {} to {}",
-                path.display(),
-                outpath.display()
-            ))?;
+            entry.unpack(&outpath).map_err(|e| {
+                with_context(
+                    &format!(
+                        "Failed to extract file: {} to {}",
+                        path.display(),
+                        outpath.display()
+                    ),
+                    e,
+                )
+            })?;
         }
 
         // En Unix, preservar permisos ejecutables
@@ -177,7 +210,7 @@ fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
 
     println!("Extraction complete");
 
-    extracted_root.ok_or_else(|| anyhow::anyhow!("No files extracted from archive"))
+    extracted_root.ok_or_else(|| message("No files extracted from archive"))
 }
 
 /// Mueve el contenido extraído a la ubicación final
@@ -191,31 +224,39 @@ pub fn move_extracted_files(extracted_path: &Path, target_path: &Path) -> Result
     );
 
     if !extracted_path.exists() {
-        anyhow::bail!(
+        return Err(message(format!(
             "Extracted path does not exist: {}",
             extracted_path.display()
-        );
+        )));
     }
 
     // Si el target ya existe, eliminarlo
     if target_path.exists() {
-        fs::remove_dir_all(target_path).context(format!(
-            "Failed to remove existing target: {}",
-            target_path.display()
-        ))?;
+        fs::remove_dir_all(target_path).map_err(|e| {
+            with_context(
+                &format!("Failed to remove existing target: {}", target_path.display()),
+                e,
+            )
+        })?;
     }
 
     // Crear el directorio padre del target
     if let Some(parent) = target_path.parent() {
-        fs::create_dir_all(parent).context("Failed to create target parent directory")?;
+        fs::create_dir_all(parent)
+            .map_err(|e| with_context("Failed to create target parent directory", e))?;
     }
 
     // Mover/renombrar el directorio extraído
-    fs::rename(extracted_path, target_path).context(format!(
-        "Failed to move from {} to {}",
-        extracted_path.display(),
-        target_path.display()
-    ))?;
+    fs::rename(extracted_path, target_path).map_err(|e| {
+        with_context(
+            &format!(
+                "Failed to move from {} to {}",
+                extracted_path.display(),
+                target_path.display()
+            ),
+            e,
+        )
+    })?;
 
     println!("Files moved successfully");
     Ok(())

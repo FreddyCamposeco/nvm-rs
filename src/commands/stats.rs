@@ -7,6 +7,7 @@ use crate::config::Config;
 use crate::core::cache::get_cache_info;
 use crate::core::aliases::Aliases;
 use crate::core::cache::get_cache_total_size;
+use crate::core::versions;
 
 /// Estadísticas de instalación de nvm
 #[derive(Debug, Clone)]
@@ -89,30 +90,7 @@ pub async fn get_stats(config: &Config) -> anyhow::Result<Stats> {
 
 /// Obtener versión activa
 fn get_active_version(config: &Config) -> Option<String> {
-    let current_link = config.current_dir();
-
-    #[cfg(target_os = "windows")]
-    {
-        // En Windows buscar en el directorio "current"
-        if let Ok(_dir) = fs::read_dir(&current_link) {
-            // La carpeta actual es un junction, simplemente buscar archivos
-            return Some("(active)".to_string());
-        }
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        // En Unix, leer el symlink
-        if let Ok(target) = fs::read_link(&current_link) {
-            if let Some(name) = target.file_name() {
-                if let Some(name_str) = name.to_str() {
-                    return Some(name_str.to_string());
-                }
-            }
-        }
-    }
-
-    None
+    versions::get_current_version(config)
 }
 
 /// Calcular tamaño total de un directorio

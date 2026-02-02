@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use crate::error::{message, with_context, Result};
 use indicatif::{ProgressBar, ProgressStyle};
 use sha2::{Digest, Sha256};
 use std::fs::File;
@@ -41,19 +41,19 @@ pub async fn get_expected_checksum(
     filename: &str,
     config: &Config,
 ) -> Result<String> {
-    let client = create_client()?;
+    let client = create_client().map_err(|e| with_context("Failed to create HTTP client", e))?;
     let url = get_checksum_url(version, config);
     
     let response = client
         .get(&url)
         .send()
         .await
-        .context("Failed to download SHASUMS256.txt")?;
+        .map_err(|e| with_context("Failed to download SHASUMS256.txt", e))?;
     
     let content = response
         .text()
         .await
-        .context("Failed to read SHASUMS256.txt")?;
+        .map_err(|e| with_context("Failed to read SHASUMS256.txt", e))?;
     
     // Formato: "checksum  filename"
     for line in content.lines() {
@@ -63,15 +63,17 @@ pub async fn get_expected_checksum(
         }
     }
     
-    anyhow::bail!("Checksum not found for {}", filename)
+    Err(message(format!("Checksum not found for {}", filename)))
 }
 
 /// Calcula el checksum SHA256 de un archivo
 pub fn calculate_checksum(path: &Path) -> Result<String> {
-    let mut file = File::open(path).context("Failed to open file for checksum")?;
+    let mut file = File::open(path)
+        .map_err(|e| with_context("Failed to open file for checksum", e))?;
     let mut hasher = Sha256::new();
     
-    std::io::copy(&mut file, &mut hasher).context("Failed to read file for checksum")?;
+    std::io::copy(&mut file, &mut hasher)
+        .map_err(|e| with_context("Failed to read file for checksum", e))?;
     
     let hash = hasher.finalize();
     Ok(format!("{:x}", hash))
@@ -84,11 +86,11 @@ pub fn verify_checksum(path: &Path, expected: &str) -> Result<()> {
     if actual.to_lowercase() == expected.to_lowercase() {
         Ok(())
     } else {
-        anyhow::bail!(
+        Err(message(format!(
             "Checksum mismatch!\nExpected: {}\nActual:   {}",
             expected,
             actual
-        )
+        )))
     }
 }
 
@@ -98,7 +100,7 @@ pub async fn download_node_archive(
     dest_dir: &Path,
     config: &Config,
 ) -> Result<PathBuf> {
-    let client = create_client()?;
+    let client = create_client().map_err(|e| with_context("Failed to create HTTP client", e))?;
     let url = get_download_url(version, config);
     
     // Extraer el nombre del archivo de la URL
@@ -128,10 +130,13 @@ pub async fn download_node_archive(
         .get(&url)
         .send()
         .await
-        .context("Failed to start download")?;
+        .map_err(|e| with_context("Failed to start download", e))?;
     
     if !response.status().is_success() {
-        anyhow::bail!("Download failed with status: {}", response.status());
+        return Err(message(format!(
+            "Download failed with status: {}",
+            response.status()
+        )));
     }
     
     let total_size = response.content_length().unwrap_or(0);
@@ -149,22 +154,23 @@ pub async fn download_node_archive(
     let content = response
         .bytes()
         .await
-        .context("Failed to download file")?;
+        .map_err(|e| with_context("Failed to download file", e))?;
     
     pb.set_position(content.len() as u64);
     pb.finish_with_message("Download complete");
     
     // Crear directorio si no existe
     if let Some(parent) = dest_path.parent() {
-        std::fs::create_dir_all(parent).context("Failed to create download directory")?;
+        std::fs::create_dir_all(parent)
+            .map_err(|e| with_context("Failed to create download directory", e))?;
     }
     
     // Escribir archivo
     let mut file = File::create(&dest_path)
-        .context(format!("Failed to create file: {}", dest_path.display()))?;
+        .map_err(|e| with_context(&format!("Failed to create file: {}", dest_path.display()), e))?;
     
     file.write_all(&content)
-        .context("Failed to write downloaded content")?;
+        .map_err(|e| with_context("Failed to write downloaded content", e))?;
     
     println!("Saved to: {}", dest_path.display());
     
@@ -173,7 +179,7 @@ pub async fn download_node_archive(
     match get_expected_checksum(&version.version, filename, config).await {
         Ok(expected) => {
             verify_checksum(&dest_path, &expected)
-                .context("Checksum verification failed")?;
+                .map_err(|e| with_context("Checksum verification failed", e))?;
             println!("Checksum verified ✓");
         }
         Err(e) => {
