@@ -1,6 +1,6 @@
 # nvm-rs
 
-🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma (v0.5.1)
+🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma (v0.6.0)
 
 [![Version](https://img.shields.io/github/v/release/FreddyCamposeco/nvm-rs?label=version)](https://github.com/FreddyCamposeco/nvm-rs/releases/latest) [![Rust](https://img.shields.io/badge/rust-1.91%2B-orange.svg)](https://www.rust-lang.org) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)](https://github.com/FreddyCamposeco/nvm-rs/releases) [![Downloads](https://img.shields.io/github/downloads/FreddyCamposeco/nvm-rs/total)](https://github.com/FreddyCamposeco/nvm-rs/releases)
 
@@ -18,7 +18,7 @@
 
 ## 🚀 Estado del Proyecto
 
-**Versión**: 0.5.1
+**Versión**: 0.6.0
 **Estado**: ✅ Producción - Completamente Funcional
 **Plataformas Soportadas**: 
 - 🪟 Windows (x64, ARM64)
@@ -54,7 +54,7 @@
 iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 
 # O con opciones personalizadas
-$env:NVM_VERSION="v0.5.1"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
+$env:NVM_VERSION="v0.6.0"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 ```
 
 **Linux / macOS (Bash)**
@@ -64,7 +64,7 @@ $env:NVM_VERSION="v0.5.1"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.
 curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 
 # O con opciones personalizadas
-export NVM_VERSION="v0.5.1"
+export NVM_VERSION="v0.6.0"
 export NVM_INSTALL_DIR="$HOME/.nvm"
 curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 ```
@@ -85,7 +85,7 @@ curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts
 ```bash
 # Instalar/actualizar usando nvm (si ya lo tienes instalado)
 nvm install-self                 # Instalar última versión
-nvm install-self -v v0.5.0      # Instalar versión específica
+nvm install-self -v v0.6.0      # Instalar versión específica
 nvm update-self                  # Actualizar a la última versión
 nvm uninstall-self              # Desinstalar nvm del sistema
 ```
