@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use crate::error::{message, with_context, Result};
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
 use std::fs::File;
@@ -13,7 +13,7 @@ pub fn create_client() -> Result<Client> {
         .timeout(Duration::from_secs(30))
         .user_agent("nvm-rs/0.1.0")
         .build()
-        .context("Failed to create HTTP client")?;
+        .map_err(|e| with_context("Failed to create HTTP client", e))?;
     
     Ok(client)
 }
@@ -29,7 +29,7 @@ pub async fn download_file(url: &str, dest: &Path) -> Result<()> {
         .get(url)
         .send()
         .await
-        .context("Failed to send HTTP request")?;
+        .map_err(|e| with_context("Failed to send HTTP request", e))?;
     
     let total_size = response.content_length().unwrap_or(0);
     
@@ -46,17 +46,17 @@ pub async fn download_file(url: &str, dest: &Path) -> Result<()> {
     let content = response
         .bytes()
         .await
-        .context("Failed to download file")?;
+        .map_err(|e| with_context("Failed to download file", e))?;
     
     pb.set_position(content.len() as u64);
     pb.finish_with_message("Download complete");
     
     // Write to file
     let mut file = File::create(dest)
-        .context(format!("Failed to create file: {}", dest.display()))?;
+        .map_err(|e| with_context(&format!("Failed to create file: {}", dest.display()), e))?;
     
     file.write_all(&content)
-        .context("Failed to write downloaded content to file")?;
+        .map_err(|e| with_context("Failed to write downloaded content to file", e))?;
     
     Ok(())
 }
@@ -74,16 +74,16 @@ pub async fn download_json(url: &str, max_retries: u32) -> Result<String> {
                     return response
                         .text()
                         .await
-                        .context("Failed to read response body");
+                        .map_err(|e| with_context("Failed to read response body", e));
                 } else {
-                    last_error = Some(anyhow::anyhow!(
+                    last_error = Some(message(format!(
                         "HTTP error: {}",
                         response.status()
-                    ));
+                    )));
                 }
             }
             Err(e) => {
-                last_error = Some(anyhow::anyhow!("Request failed: {}", e));
+                last_error = Some(message(format!("Request failed: {}", e)));
             }
         }
         
@@ -94,7 +94,10 @@ pub async fn download_json(url: &str, max_retries: u32) -> Result<String> {
         }
     }
     
-    Err(last_error.unwrap_or_else(|| anyhow::anyhow!("Download failed after {} retries", max_retries)))
+    Err(last_error.unwrap_or_else(|| message(format!(
+        "Download failed after {} retries",
+        max_retries
+    ))))
 }
 
 /// Checks if a URL is accessible (HEAD request)

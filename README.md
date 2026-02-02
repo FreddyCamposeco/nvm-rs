@@ -19,8 +19,12 @@
 ## 🚀 Estado del Proyecto
 
 **Versión**: 0.5.1
-**Estado**: ✅ Producción - Totalmente Funcional
-**Plataformas**: Windows, Linux, macOS (x64 y ARM64)
+**Estado**: ✅ Producción - Completamente Funcional
+**Plataformas Soportadas**: 
+- 🪟 Windows (x64, ARM64)
+- 🐧 Linux (x64, ARM64) 
+- 🍎 macOS (x64, Apple Silicon ARM64)
+- ✅ Todas con features idénticas y cross-platform homologado
 
 ## ✨ Características
 
@@ -165,12 +169,24 @@ nvm doctor
 ### Configuración y Utilidades
 
 ```bash
+# Ver estadísticas de instalación
+nvm stats                  # Formato tabular
+nvm stats --json           # Formato JSON
+
+# Diagnóstico del sistema (auto-fix opcional)
+nvm doctor                 # Verifica instalación y configuración
+nvm doctor --fix           # Auto-configura PATH y variables en Unix
+nvm doctor --system        # Detecta Node.js del sistema
+nvm doctor --all           # Muestra todas las instalaciones encontradas
+
 # Cambiar idioma
 nvm lang es    # Español
 nvm lang en    # English
 
-# Diagnóstico del sistema
-nvm doctor
+# Gestión de nvm mismo
+nvm install-self           # Instalar nvm desde GitHub
+nvm update-self            # Actualizar a la última versión
+nvm uninstall-self         # Desinstalar nvm completamente
 ```
 
 ## 📁 Estructura de Directorios
@@ -292,7 +308,27 @@ cargo build --release
 
 # Con feature self-update
 cargo build --release --features self-update
+
+# Compilar para plataformas específicas (requiere targets instalados)
+cargo build --target aarch64-apple-darwin --release  # macOS ARM64
+cargo build --target x86_64-apple-darwin --release   # macOS x64
+cargo build --target x86_64-unknown-linux-gnu --release
+cargo build --target aarch64-unknown-linux-gnu --release
+cargo build --target x86_64-pc-windows-msvc --release
 ```
+
+### Build Scripts
+
+nvm-rs incluye scripts automatizados para compilar todas las plataformas:
+
+```bash
+# Usar build.sh en Linux/macOS o build-releases.ps1 en Windows PowerShell
+./scripts/build/build.sh                    # Auto-detecta SO y compila
+./scripts/build/build.sh --target macos-arm64  # Compilar específico
+./scripts/build/build.sh --with-self-update    # Incluir capacidad self-update
+```
+
+Ver [BUILD_GUIDE.md](scripts/BUILD_GUIDE.md) para más detalles.
 
 ### Tests
 
@@ -384,7 +420,7 @@ export PATH="$NVM_BIN:$NVM_NODE:$PATH"
 | Comando | Descripción |
 |---------|-------------|
 | `nvm cleanup [--yes]` | Limpiar versiones no usadas (mantiene LTS y actual) |
-| `nvm doctor [--all] [--system]` | Diagnóstico del sistema (--all: todas instalaciones, --system: solo sistema) |
+| `nvm doctor [--all] [--system] [--fix]` | Diagnóstico del sistema (--fix: auto-configura PATH en Unix) |
 | `nvm stats [--json]` | Mostrar estadísticas de instalación (formato texto o JSON) |
 
 ### Gestión de nvm

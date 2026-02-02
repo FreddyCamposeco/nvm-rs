@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::core::versions::NodeVersion;
-use anyhow::Result;
+use crate::error::{with_context, Result};
 use std::fs;
 use std::time::{Duration, SystemTime};
 
@@ -12,7 +12,9 @@ pub async fn get_cached_versions(config: &Config) -> Result<Vec<NodeVersion>> {
     if cache_file.exists() {
         if let Ok(metadata) = fs::metadata(&cache_file) {
             if let Ok(modified) = metadata.modified() {
-                let age = SystemTime::now().duration_since(modified)?;
+                let age = SystemTime::now()
+                    .duration_since(modified)
+                    .map_err(|e| with_context("Failed to compute cache age", e))?;
                 let max_age = Duration::from_secs(config.cache_duration_minutes * 60);
 
                 if age < max_age {
@@ -257,7 +259,9 @@ pub fn get_installed_cache(config: &Config) -> Result<Vec<String>> {
     // Verificar edad del caché
     if let Ok(metadata) = fs::metadata(&cache_file) {
         if let Ok(modified) = metadata.modified() {
-            let age = SystemTime::now().duration_since(modified)?;
+            let age = SystemTime::now()
+                .duration_since(modified)
+                .map_err(|e| with_context("Failed to compute installed cache age", e))?;
             let max_age = Duration::from_secs(config.installed_cache_duration_minutes * 60);
 
             if age < max_age {

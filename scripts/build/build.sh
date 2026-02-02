@@ -192,6 +192,41 @@ fi
 print_warning "PowerShell no encontrado - usando compilación básica con cargo"
 print_section "Compilando"
 
+# Convertir nombres simplificados a targets de Rust reales
+if [ -n "$TARGET" ]; then
+    case "$TARGET" in
+        windows-x64)
+            RUST_TARGET="x86_64-pc-windows-msvc"
+            ;;
+        windows-arm64)
+            RUST_TARGET="aarch64-pc-windows-msvc"
+            ;;
+        linux-x64|linux-gnu-x64)
+            RUST_TARGET="x86_64-unknown-linux-gnu"
+            ;;
+        linux-arm64|linux-gnu-arm64)
+            RUST_TARGET="aarch64-unknown-linux-gnu"
+            ;;
+        linux-musl-x64)
+            RUST_TARGET="x86_64-unknown-linux-musl"
+            ;;
+        linux-musl-arm64)
+            RUST_TARGET="aarch64-unknown-linux-musl"
+            ;;
+        macos-x64)
+            RUST_TARGET="x86_64-apple-darwin"
+            ;;
+        macos-arm64)
+            RUST_TARGET="aarch64-apple-darwin"
+            ;;
+        *)
+            # Si ya es un target de Rust válido, usarlo directamente
+            RUST_TARGET="$TARGET"
+            ;;
+    esac
+    TARGET="$RUST_TARGET"
+fi
+
 # Detectar target si no se especifica
 if [ -z "$TARGET" ]; then
     # Detectar OS actual

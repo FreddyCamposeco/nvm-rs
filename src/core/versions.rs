@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::error::{message, Result};
 use serde::{Deserialize, Serialize};
 
 /// Representa una versión de Node.js del índice remoto
@@ -86,13 +86,13 @@ pub fn resolve_version(version: &str, available_versions: &[NodeVersion]) -> Res
             if let Some(latest) = available_versions.first() {
                 return Ok(latest.version.clone());
             }
-            anyhow::bail!("No versions available");
+            return Err(message("No versions available"));
         }
         "lts" => {
             if let Some(lts_version) = available_versions.iter().find(|v| v.lts.is_lts()) {
                 return Ok(lts_version.version.clone());
             }
-            anyhow::bail!("No LTS version found");
+            return Err(message("No LTS version found"));
         }
         alias if alias.starts_with("lts/") => {
             let lts_name = &alias[4..];
@@ -105,7 +105,7 @@ pub fn resolve_version(version: &str, available_versions: &[NodeVersion]) -> Res
             }) {
                 return Ok(lts_version.version.clone());
             }
-            anyhow::bail!("LTS version '{}' not found", lts_name);
+            return Err(message(format!("LTS version '{}' not found", lts_name)));
         }
         _ => {
             // Buscar por nombre de LTS directamente
@@ -119,7 +119,7 @@ pub fn resolve_version(version: &str, available_versions: &[NodeVersion]) -> Res
                 return Ok(lts_version.version.clone());
             }
 
-            anyhow::bail!("Unknown version or alias: {}", version);
+            return Err(message(format!("Unknown version or alias: {}", version)));
         }
     }
 }
@@ -180,14 +180,21 @@ impl VersionFilter {
 
         // Filter by platform (check if files array contains the platform-specific archive)
         if let Some(platform) = &self.platform {
-            let extension = if platform.contains("win") {
-                "zip"
+            let platform = platform.to_lowercase();
+
+            let (platform_key, extension) = if platform.contains("win") {
+                ("win", "zip")
+            } else if platform.contains("darwin") || platform.contains("mac") {
+                ("darwin", "tar.gz")
             } else {
-                "tar.gz"
+                ("linux", "tar.gz")
             };
 
             filtered.retain(|v| {
-                v.files.iter().any(|f| f.ends_with(extension))
+                v.files.iter().any(|f| {
+                    let f = f.to_lowercase();
+                    f.contains(platform_key) && f.ends_with(extension)
+                })
             });
         }
 

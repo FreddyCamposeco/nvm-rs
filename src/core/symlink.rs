@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use crate::error::{with_context, Result};
 use std::path::Path;
 
 #[cfg(windows)]
@@ -20,28 +20,36 @@ pub fn create_or_update_symlink(target: &Path, link: &Path) -> Result<()> {
     // Crear el directorio padre si no existe
     if let Some(parent) = link.parent() {
         std::fs::create_dir_all(parent)
-            .context("Failed to create parent directory for symlink")?;
+            .map_err(|e| with_context("Failed to create parent directory for symlink", e))?;
     }
 
     // Crear el symlink según la plataforma
     #[cfg(windows)]
     {
-        create_junction(target, link)
-            .context(format!(
-                "Failed to create junction from {} to {}",
-                link.display(),
-                target.display()
-            ))?;
+        create_junction(target, link).map_err(|e| {
+            with_context(
+                &format!(
+                    "Failed to create junction from {} to {}",
+                    link.display(),
+                    target.display()
+                ),
+                e,
+            )
+        })?;
     }
 
     #[cfg(unix)]
     {
-        unix_fs::symlink(target, link)
-            .context(format!(
-                "Failed to create symlink from {} to {}",
-                link.display(),
-                target.display()
-            ))?;
+        unix_fs::symlink(target, link).map_err(|e| {
+            with_context(
+                &format!(
+                    "Failed to create symlink from {} to {}",
+                    link.display(),
+                    target.display()
+                ),
+                e,
+            )
+        })?;
     }
 
     Ok(())
@@ -52,12 +60,16 @@ pub fn persist_current_version(link: &Path, version: &str) -> Result<()> {
     // Crear directorio 'current' si no existe
     if let Some(parent) = link.parent() {
         std::fs::create_dir_all(parent)
-            .context("Failed to create current directory")?;
+            .map_err(|e| with_context("Failed to create current directory", e))?;
     }
 
     let version_file = link.join(".nvm-version");
-    std::fs::write(&version_file, version)
-        .context(format!("Failed to persist version to {}", version_file.display()))?;
+    std::fs::write(&version_file, version).map_err(|e| {
+        with_context(
+            &format!("Failed to persist version to {}", version_file.display()),
+            e,
+        )
+    })?;
 
     Ok(())
 }
@@ -71,8 +83,12 @@ pub fn read_persisted_version(link: &Path) -> Result<Option<String>> {
         return Ok(None);
     }
 
-    let content = std::fs::read_to_string(&version_file)
-        .context(format!("Failed to read persisted version from {}", version_file.display()))?;
+    let content = std::fs::read_to_string(&version_file).map_err(|e| {
+        with_context(
+            &format!("Failed to read persisted version from {}", version_file.display()),
+            e,
+        )
+    })?;
 
     let version = content.trim().to_string();
     if version.is_empty() {
@@ -93,19 +109,22 @@ pub fn remove_symlink(link: &Path) -> Result<()> {
     {
         // En Windows, usar remove_dir para junctions
         if link.is_dir() {
-            std::fs::remove_dir(link)
-                .context(format!("Failed to remove junction: {}", link.display()))?;
+            std::fs::remove_dir(link).map_err(|e| {
+                with_context(&format!("Failed to remove junction: {}", link.display()), e)
+            })?;
         } else {
-            std::fs::remove_file(link)
-                .context(format!("Failed to remove symlink: {}", link.display()))?;
+            std::fs::remove_file(link).map_err(|e| {
+                with_context(&format!("Failed to remove symlink: {}", link.display()), e)
+            })?;
         }
     }
 
     #[cfg(unix)]
     {
         // En Unix, remove_file funciona para symlinks
-        std::fs::remove_file(link)
-            .context(format!("Failed to remove symlink: {}", link.display()))?;
+        std::fs::remove_file(link).map_err(|e| {
+            with_context(&format!("Failed to remove symlink: {}", link.display()), e)
+        })?;
     }
 
     Ok(())
@@ -133,13 +152,16 @@ pub fn read_symlink_target(link: &Path) -> Result<std::path::PathBuf> {
                 // Fallback: si read_link falla, intentar canonicalize
                 link.canonicalize()
             })
-            .context(format!("Failed to read symlink target: {}", link.display()))
+            .map_err(|e| {
+                with_context(&format!("Failed to read symlink target: {}", link.display()), e)
+            })
     }
 
     #[cfg(unix)]
     {
-        std::fs::read_link(link)
-            .context(format!("Failed to read symlink target: {}", link.display()))
+        std::fs::read_link(link).map_err(|e| {
+            with_context(&format!("Failed to read symlink target: {}", link.display()), e)
+        })
     }
 }
 

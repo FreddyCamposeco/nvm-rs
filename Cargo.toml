@@ -37,6 +37,7 @@ colored = "2.1"
 # Filesystem
 home = "0.5"
 directories = "5.0"
+libc = "0.2"
 
 # Archivos comprimidos
 zip = "0.6"

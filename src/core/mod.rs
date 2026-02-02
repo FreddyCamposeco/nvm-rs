@@ -6,5 +6,6 @@ pub mod symlink;
 pub mod aliases;
 pub mod installer;
 pub mod detection;
+pub mod github;
 
 pub use cache::*;
