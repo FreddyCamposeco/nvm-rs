@@ -37,7 +37,7 @@ esac
 ARCH="$(uname -m)"
 case "$ARCH" in
     x86_64)     ARCH="x64";;
-    aarch64|arm64) ARCH="arm64";;
+    aarch64|arm64) ARCH="aarch64";;
     *)          error "Arquitectura no soportada: $ARCH";;
 esac
 
