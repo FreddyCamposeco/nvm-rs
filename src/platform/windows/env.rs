@@ -159,10 +159,92 @@ pub fn set_nvm_home(nvm_dir: &Path) -> Result<()> {
         .map_err(|e| with_context("Failed to set NVM_HOME", e))?;
 
     if !status.success() {
-        return Err(message("Failed to set NVM_DIR environment variable"));
+        return Err(message("Failed to set NVM_HOME environment variable"));
     }
 
     // Notificar al sistema del cambio
+    unsafe {
+        let param = "Environment\0".encode_utf16().collect::<Vec<u16>>();
+        SendMessageTimeoutW(
+            HWND_BROADCAST,
+            WM_SETTINGCHANGE,
+            0,
+            param.as_ptr() as isize,
+            SMTO_ABORTIFHUNG,
+            5000,
+            ptr::null_mut(),
+        );
+    }
+
+    Ok(())
+}
+
+/// Establece la variable de entorno NVM_BIN
+pub fn set_nvm_bin(nvm_bin: &Path) -> Result<()> {
+    use std::ptr;
+    use winapi::um::winuser::{
+        SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE,
+    };
+
+    let nvm_bin_str = nvm_bin.to_string_lossy();
+
+    let status = std::process::Command::new("powershell")
+        .args(&[
+            "-NoProfile",
+            "-Command",
+            &format!(
+                "[Environment]::SetEnvironmentVariable('NVM_BIN', '{}', 'User')",
+                nvm_bin_str
+            ),
+        ])
+        .status()
+        .map_err(|e| with_context("Failed to set NVM_BIN", e))?;
+
+    if !status.success() {
+        return Err(message("Failed to set NVM_BIN environment variable"));
+    }
+
+    unsafe {
+        let param = "Environment\0".encode_utf16().collect::<Vec<u16>>();
+        SendMessageTimeoutW(
+            HWND_BROADCAST,
+            WM_SETTINGCHANGE,
+            0,
+            param.as_ptr() as isize,
+            SMTO_ABORTIFHUNG,
+            5000,
+            ptr::null_mut(),
+        );
+    }
+
+    Ok(())
+}
+
+/// Establece la variable de entorno NVM_NODE
+pub fn set_nvm_node(nvm_node: &Path) -> Result<()> {
+    use std::ptr;
+    use winapi::um::winuser::{
+        SendMessageTimeoutW, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE,
+    };
+
+    let nvm_node_str = nvm_node.to_string_lossy();
+
+    let status = std::process::Command::new("powershell")
+        .args(&[
+            "-NoProfile",
+            "-Command",
+            &format!(
+                "[Environment]::SetEnvironmentVariable('NVM_NODE', '{}', 'User')",
+                nvm_node_str
+            ),
+        ])
+        .status()
+        .map_err(|e| with_context("Failed to set NVM_NODE", e))?;
+
+    if !status.success() {
+        return Err(message("Failed to set NVM_NODE environment variable"));
+    }
+
     unsafe {
         let param = "Environment\0".encode_utf16().collect::<Vec<u16>>();
         SendMessageTimeoutW(

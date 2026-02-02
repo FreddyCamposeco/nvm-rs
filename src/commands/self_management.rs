@@ -87,6 +87,23 @@ pub async fn install_self(
                 .replace("{path}", &nvm_data_dir.display().to_string()));
         }
 
+        // Configurar NVM_BIN
+        if let Err(e) = set_nvm_bin(&install_dir) {
+            println!("{}", t!("install_self_env_warning")
+                .replace("{error}", &e.to_string()));
+        } else {
+            println!("✓ NVM_BIN configurado ({})", install_dir.display());
+        }
+
+        // Configurar NVM_NODE (ruta a current/bin)
+        let nvm_node_dir = nvm_data_dir.join("current").join("bin");
+        if let Err(e) = set_nvm_node(&nvm_node_dir) {
+            println!("{}", t!("install_self_env_warning")
+                .replace("{error}", &e.to_string()));
+        } else {
+            println!("✓ NVM_NODE configurado ({})", nvm_node_dir.display());
+        }
+
         // Agregar nvm/bin al PATH si no está
         if !is_in_path(&install_dir) {
             if let Err(e) = add_to_path(&install_dir) {
