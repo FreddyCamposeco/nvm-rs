@@ -154,7 +154,7 @@ pub fn enable_symlinks() -> Result<()> {
     };
 
     if !output {
-        print_warning("Este comando requiere permisos de administrador");
+        print_warning(&t!("enable_symlinks_admin_required"));
         println!();
         println!("Para ejecutar como administrador:");
         println!("  1. Click derecho en PowerShell");
@@ -175,7 +175,7 @@ pub fn enable_symlinks() -> Result<()> {
 
     match result {
         Ok(output) if output.status.success() => {
-            print_success("✓ Symlink support habilitado");
+            print_success(&t!("enable_symlinks_success"));
             println!();
             println!("Cambios aplicados:");
             println!("  • Developer Mode habilitado en el registro");
@@ -186,7 +186,7 @@ pub fn enable_symlinks() -> Result<()> {
             println!();
         }
         _ => {
-            print_warning("No se pudo habilitar automáticamente");
+            print_warning(&t!("enable_symlinks_failed"));
             println!();
             println!("Habilita manualmente:");
             println!("  1. Configuración > Actualización y seguridad");
