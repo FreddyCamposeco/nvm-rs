@@ -92,7 +92,8 @@ pub async fn install_self(
             println!("{}", t!("install_self_env_warning")
                 .replace("{error}", &e.to_string()));
         } else {
-            println!("✓ NVM_BIN configurado ({})", install_dir.display());
+            println!("{}", t!("install_self_nvm_bin_set")
+                .replace("{}", &install_dir.display().to_string()));
         }
 
         // Configurar NVM_NODE (ruta a current/bin)
@@ -101,7 +102,8 @@ pub async fn install_self(
             println!("{}", t!("install_self_env_warning")
                 .replace("{error}", &e.to_string()));
         } else {
-            println!("✓ NVM_NODE configurado ({})", nvm_node_dir.display());
+            println!("{}", t!("install_self_nvm_node_set")
+                .replace("{}", &nvm_node_dir.display().to_string()));
         }
 
         // Agregar nvm/bin al PATH si no está
@@ -127,7 +129,7 @@ pub async fn install_self(
                 println!("✓ PATH configurado para versión activa ({})", current_dir.display());
             }
         } else {
-            println!("✓ PATH de versión activa ya configurado");
+            println!("✓ {}", t!("install_self_path_active_already_set"));
         }
 
         println!("\n{}", t!("install_self_restart_terminal"));

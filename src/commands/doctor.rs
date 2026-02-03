@@ -63,8 +63,8 @@ pub fn run_diagnostics(config: &Config, _fix: bool) -> Result<()> {
     });
 
     match handle.join() {
-        Ok(Ok(_)) => print_success("OK"),
-        _ => print_warning("Failed"),
+        Ok(Ok(_)) => print_success(&t!("doctor_ok")),
+        _ => print_warning(&t!("doctor_failed")),
     }
 
     // Check symlink support
@@ -99,9 +99,9 @@ pub fn run_diagnostics(config: &Config, _fix: bool) -> Result<()> {
         };
 
         if symlink_works {
-            print_success("Supported");
+            print_success(&t!("doctor_supported"));
         } else {
-            print_warning("Check required (admin rights may be needed)");
+            print_warning(&t!("doctor_check_required"));
             println!("\n  {} To enable: Run Windows as Administrator", t!("note"));
             println!("  {} Or enable Developer Mode for non-admin symlink creation", t!("note"));
         }
@@ -129,24 +129,26 @@ pub fn run_diagnostics(config: &Config, _fix: bool) -> Result<()> {
 
         print!("NVM env & PATH ");
         if env_ok && path_ok {
-            print_success("OK");
+            print_success(&t!("doctor_ok"));
         } else {
-            print_warning("Missing or incomplete");
+            print_warning(&t!("doctor_missing"));
 
             if fix {
                 let mut fixed = true;
                 if let Err(e) = core::installer::set_nvm_dir(&config.nvm_dir) {
                     fixed = false;
-                    print_warning(&format!("Failed to update env: {}", e));
+                    print_warning(&t!("doctor_update_env_failed")
+                        .replace("{}", &e.to_string()));
                 }
 
                 if let Err(e) = core::installer::add_to_path(&expected_bin) {
                     fixed = false;
-                    print_warning(&format!("Failed to update PATH: {}", e));
+                    print_warning(&t!("doctor_update_path_failed")
+                        .replace("{}", &e.to_string()));
                 }
 
                 if fixed {
-                    print_success("Updated shell configuration");
+                    print_success(&t!("doctor_updated_config"));
                     println!("\n  {} Restart your terminal to apply changes", t!("note"));
                 }
             }

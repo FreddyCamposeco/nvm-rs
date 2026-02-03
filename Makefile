@@ -18,7 +18,7 @@ NC := \033[0m
 
 help: ## Mostrar esta ayuda
 	@echo "$(MAGENTA)╔═══════════════════════════════════════════════════════╗$(NC)"
-	@echo "$(MAGENTA)║         NVM-RS Build & Release Makefile                ║$(NC)"
+	@echo "$(MAGENTA)║         NVM-RS Build & Release Makefile               ║$(NC)"
 	@echo "$(MAGENTA)╚═══════════════════════════════════════════════════════╝$(NC)"
 	@echo ""
 	@echo "$(CYAN)Comandos disponibles:$(NC)"
@@ -214,4 +214,3 @@ setup: install-targets ## Setup inicial (instalar targets)
 
 .PHONY: all
 all: clean check build-all validate-release ## Complete workflow
-
