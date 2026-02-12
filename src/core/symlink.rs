@@ -121,10 +121,25 @@ pub fn remove_symlink(link: &Path) -> Result<()> {
 
     #[cfg(unix)]
     {
-        // En Unix, remove_file funciona para symlinks
-        std::fs::remove_file(link).map_err(|e| {
-            with_context(&format!("Failed to remove symlink: {}", link.display()), e)
-        })?;
+        // En Unix, verificar primero si es symlink o directorio
+        if let Ok(metadata) = link.symlink_metadata() {
+            if metadata.is_symlink() {
+                // Es un symlink, usar remove_file
+                std::fs::remove_file(link).map_err(|e| {
+                    with_context(&format!("Failed to remove symlink: {}", link.display()), e)
+                })?;
+            } else if metadata.is_dir() {
+                // Es un directorio real (caso legacy), eliminarlo recursivamente
+                std::fs::remove_dir_all(link).map_err(|e| {
+                    with_context(&format!("Failed to remove directory: {}", link.display()), e)
+                })?;
+            } else {
+                // Es un archivo regular
+                std::fs::remove_file(link).map_err(|e| {
+                    with_context(&format!("Failed to remove file: {}", link.display()), e)
+                })?;
+            }
+        }
     }
 
     Ok(())
