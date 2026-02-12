@@ -15,6 +15,7 @@ Historial de cambios de nvm-rs. Este archivo documenta todas las modificaciones 
 ### Fixed
 - Corrected `doctor` flag parameter usage
 - Avoids broken pipe panic when output is piped
+- Handle legacy directory in symlink removal on Unix (fixes "Operation not permitted" error on macOS)
 
 ---
 
