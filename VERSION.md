@@ -2,9 +2,24 @@
 
 ## Current Version
 
-**v0.6.0** (2026-02-02)
+**v0.6.1** (2026-02-11)
 
 ## Version History
+
+### v0.6.1 - February 11, 2026
+
+#### 📦 Release: CLI Flags & Help
+
+**Improvements:**
+- ✅ Added `-v` alias for version output (`-V` kept)
+- ✅ Help output shows version flag consistently
+- ✅ No-argument invocation shows help
+- ✅ Build cleanup: fix `doctor` flag parameter usage
+- ✅ Avoid broken pipe panic when output is piped
+
+**Status**: Production Ready - Minor CLI Enhancements
+
+---
 
 ### v0.6.0 - February 2, 2026
 

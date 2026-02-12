@@ -33,7 +33,7 @@ pub fn show_system_node() {
 }
 
 /// Run full doctor diagnostics
-pub fn run_diagnostics(config: &Config, _fix: bool) -> Result<()> {
+pub fn run_diagnostics(config: &Config, fix: bool) -> Result<()> {
     println!("\n{}", t!("doctor_title"));
     println!("{}", "=".repeat(50));
 

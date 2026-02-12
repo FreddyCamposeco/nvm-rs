@@ -5,7 +5,6 @@ use std::io::{self, Write};
 use crate::config::Config;
 use crate::core::{self, versions, refresh_installed_cache};
 use crate::i18n::{set_locale, Locale};
-use crate::utils::{print_success, print_warning};
 
 /// Remove unused versions (keep current and LTS)
 pub async fn cleanup(yes: bool, config: &Config) -> Result<()> {

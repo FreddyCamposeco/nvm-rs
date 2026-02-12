@@ -2,6 +2,22 @@
 
 Historial de cambios de nvm-rs. Este archivo documenta todas las modificaciones importantes.
 
+## [v0.6.1] - 2026-02-11
+
+### Added
+- `-v` alias for version output (keeps `-V`)
+
+### Changed
+- Help output lists the version flag consistently
+- Running `nvm` without subcommands shows help
+- Installation docs updated to v0.6.1 and corrected script URLs
+
+### Fixed
+- Corrected `doctor` flag parameter usage
+- Avoids broken pipe panic when output is piped
+
+---
+
 ## [v0.6.0] - 2026-02-02
 
 ### Added
