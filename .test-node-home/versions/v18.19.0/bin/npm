@@ -1,6 +1,0 @@
-#!/bin/bash
-if [[ "$1" == "-v" || "$1" == "--version" ]]; then
-    echo "9.8.1"
-else
-    echo "npm client"
-fi
