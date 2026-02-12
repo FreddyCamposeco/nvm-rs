@@ -10,11 +10,11 @@ Historial completo de cambios y versiones de nvm-rs. Documentación de todas las
 
 **Audiencia:** Desarrolladores y usuarios que deseen ver el historial de cambios.
 
-### `RELEASE_NOTES_v0.5.0.md`
+### `CHANGELOG.md`
 
-Notas de la versión actual (v0.5.0). Incluye características principales, cambios, mejoras y cualquier información importante para esta versión.
+Notas de version unificadas. Incluye características, cambios y correcciones por versión.
 
-**Audiencia:** Usuarios finales interesados en la versión actual.
+**Audiencia:** Usuarios finales y desarrolladores.
 
 ### `QUICK_RELEASE.md`
 
@@ -73,11 +73,11 @@ nvm-rs/
 - **GitHub**: <https://github.com/FreddyCamposeco/nvm-rs>
 - **Releases**: <https://github.com/FreddyCamposeco/nvm-rs/releases>
 - **Build Scripts**: `./scripts/`
-- **Versión Actual**: v0.5.1 (ver VERSION.md)
+- **Versión Actual**: v0.6.1 (ver VERSION.md)
 
 ## Plataformas Soportadas
 
-nvm-rs v0.5.1 incluye soporte completo para:
+nvm-rs v0.6.1 incluye soporte completo para:
 - 🪟 **Windows**: x64, ARM64
 - 🐧 **Linux**: x64, ARM64  
 - 🍎 **macOS**: x64, ARM64 (Apple Silicon)

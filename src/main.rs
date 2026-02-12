@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{ArgAction, CommandFactory, Parser, Subcommand};
 use std::env;
 use std::path::PathBuf;
 
@@ -16,10 +16,18 @@ use i18n::{set_locale, Locale};
 
 #[derive(Parser)]
 #[command(name = "nvm")]
-#[command(version, about = "Node Version Manager - Rust Edition", long_about = None)]
+#[command(
+    version,
+    about = "Node Version Manager - Rust Edition",
+    long_about = None,
+    disable_version_flag = true
+)]
 struct Cli {
+    /// Print version information
+    #[arg(short = 'v', short_alias = 'V', long = "version", action = ArgAction::SetTrue)]
+    version: bool,
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -171,6 +179,19 @@ async fn main() -> Result<()> {
         libc::signal(libc::SIGPIPE, libc::SIG_IGN);
     }
 
+    #[cfg(unix)]
+    {
+        // Exit cleanly if stdout is closed (e.g., piped to `head`)
+        let default_hook = std::panic::take_hook();
+        std::panic::set_hook(Box::new(move |info| {
+            let msg = info.to_string();
+            if msg.contains("Broken pipe") {
+                std::process::exit(0);
+            }
+            default_hook(info);
+        }));
+    }
+
     // Initialize locale from environment
     let nvm_lang = env::var("NVM_LANG").unwrap_or_else(|_| "en".to_string());
     let locale = Locale::from_str(&nvm_lang).unwrap_or(Locale::En);
@@ -185,41 +206,50 @@ async fn main() -> Result<()> {
     // Create configuration
     let config = Config::new()?;
 
+    if cli.version {
+        println!("nvm {}", env!("CARGO_PKG_VERSION"));
+        return Ok(());
+    }
+
     // Execute command
     match cli.command {
-        Commands::Install { version } => {
+        None => {
+            Cli::command().print_help()?;
+            println!();
+        }
+        Some(Commands::Install { version }) => {
             commands::install::install(&version, &config).await?;
         }
 
-        Commands::Uninstall { version, force } => {
+        Some(Commands::Uninstall { version, force }) => {
             commands::uninstall::uninstall(&version, force, &config).await?;
         }
 
-        Commands::Use { version } => {
+        Some(Commands::Use { version }) => {
             commands::use_version::use_version(version, &config).await?;
         }
 
-        Commands::Ls => {
+        Some(Commands::Ls) => {
             commands::list::list_installed(&config).await?;
         }
 
-        Commands::LsRemote { lts } => {
+        Some(Commands::LsRemote { lts }) => {
             commands::list::list_remote(lts, &config).await?;
         }
 
-        Commands::Current => {
+        Some(Commands::Current) => {
             commands::list::show_current(&config)?;
         }
 
-        Commands::Alias { name, version } => {
+        Some(Commands::Alias { name, version }) => {
             commands::alias::create_alias(name, version, &config).await?;
         }
 
-        Commands::Unalias { name } => {
+        Some(Commands::Unalias { name }) => {
             commands::alias::remove_alias(name)?;
         }
 
-        Commands::Aliases => {
+        Some(Commands::Aliases) => {
             commands::alias::list_aliases()?;
         }
 
@@ -233,7 +263,7 @@ async fn main() -> Result<()> {
             commands::misc::self_update()?;
         }
 
-        Commands::Doctor { all, system, fix } => {
+        Some(Commands::Doctor { all, system, fix }) => {
             if all || system {
                 if system || all {
                     commands::doctor::show_system_node();
@@ -248,31 +278,31 @@ async fn main() -> Result<()> {
             }
         }
 
-        Commands::Cleanup { yes } => {
+        Some(Commands::Cleanup { yes }) => {
             commands::misc::cleanup(yes, &config).await?;
         }
 
-        Commands::SetDefault { version } => {
+        Some(Commands::SetDefault { version }) => {
             commands::misc::set_default(version)?;
         }
 
-        Commands::Lang { locale } => {
+        Some(Commands::Lang { locale }) => {
             commands::misc::set_language(locale)?;
         }
 
-        Commands::InstallSelf { version, dir, with_self_update } => {
+        Some(Commands::InstallSelf { version, dir, with_self_update }) => {
             commands::self_management::install_self(version, dir, with_self_update).await?;
         }
 
-        Commands::UninstallSelf { dir, yes, purge, remove_config } => {
+        Some(Commands::UninstallSelf { dir, yes, purge, remove_config }) => {
             commands::self_management::uninstall_self(dir, yes, purge, remove_config)?;
         }
 
-        Commands::UpdateSelf { version, with_self_update } => {
+        Some(Commands::UpdateSelf { version, with_self_update }) => {
             commands::self_management::update_self(version, with_self_update).await?;
         }
 
-        Commands::Stats { json } => {
+        Some(Commands::Stats { json }) => {
             let stats = commands::stats::get_stats(&config).await?;
             if json {
                 commands::stats::display_stats_json(&stats)?;

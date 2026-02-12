@@ -12,26 +12,26 @@ El método más sencillo es usar los scripts de instalación automática.
 
 ```powershell
 # Instalación básica
-iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 
 # Instalación con opciones
-$env:NVM_VERSION="v0.1.0"                      # Versión específica (opcional)
+$env:NVM_VERSION="v0.6.1"                      # Versión específica (opcional)
 $env:NVM_INSTALL_DIR="C:\nvm"                  # Directorio personalizado (opcional)
 $env:NVM_WITH_SELF_UPDATE="true"               # Con capacidad de auto-actualización (opcional)
-iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 ```
 
 #### Linux / macOS (Bash)
 
 ```bash
 # Instalación básica
-curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 
 # Instalación con opciones
-export NVM_VERSION="v0.1.0"                     # Versión específica (opcional)
+export NVM_VERSION="v0.6.1"                     # Versión específica (opcional)
 export NVM_INSTALL_DIR="$HOME/.local/bin"       # Directorio personalizado (opcional)
 export NVM_WITH_SELF_UPDATE="true"              # Con capacidad de auto-actualización (opcional)
-curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 ```
 
 **Características del script:**
@@ -52,8 +52,8 @@ Si ya tienes nvm instalado, puedes usar los comandos integrados:
 nvm install-self
 
 # Instalar versión específica
-nvm install-self --version v0.2.0
-nvm install-self -v v0.2.0
+nvm install-self --version v0.6.1
+nvm install-self -v v0.6.1
 
 # Instalar con capacidad de auto-actualización
 nvm install-self --with-self-update
@@ -69,19 +69,19 @@ nvm install-self -d C:\nvm
 
 1. **Descargar el binario:**
    - Ve a [GitHub Releases](https://github.com/FreddyCamposeco/nvm-rs/releases/latest)
-   - Descarga `nvm-v0.1.0-windows-x64.exe` (o la versión con `-self-update` si deseas esa funcionalidad)
+   - Descarga `nvm-v0.6.1-windows-x64.exe` (o la versión con `-self-update` si deseas esa funcionalidad)
 
 2. **Verificar integridad (recomendado):**
 
    ```powershell
-   Get-FileHash -Path "nvm-v0.1.0-windows-x64.exe" -Algorithm SHA256
+   Get-FileHash -Path "nvm-v0.6.1-windows-x64.exe" -Algorithm SHA256
    ```
 
 3. **Instalar:**
 
    ```powershell
    # Renombrar
-   Rename-Item "nvm-v0.1.0-windows-x64.exe" "nvm.exe"
+   Rename-Item "nvm-v0.6.1-windows-x64.exe" "nvm.exe"
 
    # Mover a ubicación deseada
    New-Item -ItemType Directory -Path "$env:LOCALAPPDATA\Programs\nvm" -Force
@@ -103,30 +103,30 @@ nvm install-self -d C:\nvm
 
    ```bash
    # Linux x64
-   wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.1.0-linux-x64
+   wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.6.1-linux-x64
 
    # macOS x64
-   wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.1.0-macos-x64
+   wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.6.1-macos-x64
 
    # Linux ARM64
-   wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.1.0-linux-arm64
+   wget https://github.com/FreddyCamposeco/nvm-rs/releases/latest/download/nvm-v0.6.1-linux-arm64
    ```
 
 2. **Verificar integridad:**
 
    ```bash
-   sha256sum nvm-v0.1.0-linux-x64
+   sha256sum nvm-v0.6.1-linux-x64
    ```
 
 3. **Instalar:**
 
    ```bash
    # Hacer ejecutable
-   chmod +x nvm-v0.1.0-linux-x64
+   chmod +x nvm-v0.6.1-linux-x64
 
    # Mover a ubicación deseada
    mkdir -p ~/.local/bin
-   mv nvm-v0.1.0-linux-x64 ~/.local/bin/nvm
+   mv nvm-v0.6.1-linux-x64 ~/.local/bin/nvm
 
    # Agregar al PATH (si no está)
    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -169,8 +169,8 @@ La forma más sencilla de actualizar:
 nvm update-self
 
 # Actualizar a versión específica
-nvm update-self --version v0.2.0
-nvm update-self -v v0.2.0
+nvm update-self --version v0.6.1
+nvm update-self -v v0.6.1
 
 # Actualizar con capacidad de auto-actualización
 nvm update-self --with-self-update
@@ -190,7 +190,7 @@ Simplemente ejecuta el script de instalación nuevamente, automáticamente hará
 
 ```powershell
 # Windows
-iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 ```
 
 ```bash
