@@ -89,6 +89,16 @@ impl Config {
     pub fn installed_cache_file(&self) -> PathBuf {
         self.nvm_dir.join(".installed_cache.json")
     }
+
+    /// Persisted user config file: locale, default_version, etc.
+    pub fn config_file(&self) -> PathBuf {
+        self.nvm_dir.join("config.json")
+    }
+
+    /// File that records the currently active Node.js version
+    pub fn version_file(&self) -> PathBuf {
+        self.nvm_dir.join(".nvm-version")
+    }
 }
 
 impl Default for Config {

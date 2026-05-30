@@ -8,3 +8,5 @@ pub mod alias;
 pub mod doctor;
 pub mod self_management;
 pub mod misc;
+pub mod which;
+pub mod run;

@@ -4,13 +4,13 @@ use crate::t;
 use std::io::{self, Write};
 use crate::config::Config;
 use crate::core::{self, versions, refresh_installed_cache};
+use crate::core::nvm_config::NvmConfig;
 use crate::i18n::{set_locale, Locale};
 
 /// Remove unused versions (keep current and LTS)
 pub async fn cleanup(yes: bool, config: &Config) -> Result<()> {
     println!("{}", t!("cleaning_up"));
 
-    // Obtener versiones instaladas
     let installed = core::get_installed_versions(config)?;
 
     if installed.is_empty() {
@@ -18,27 +18,21 @@ pub async fn cleanup(yes: bool, config: &Config) -> Result<()> {
         return Ok(());
     }
 
-    // Obtener versión actual
     let current_version = versions::get_current_version(config);
-
-    // Obtener información de versiones remotas para identificar LTS
     let available_versions = core::get_cached_versions(config).await.unwrap_or_default();
 
-    // Determinar qué versiones mantener
     let mut versions_to_keep = Vec::new();
     let mut versions_to_remove = Vec::new();
 
     for version in &installed {
         let mut keep = false;
 
-        // Mantener versión actual
         if let Some(ref current) = current_version {
             if version == current {
                 keep = true;
             }
         }
 
-        // Mantener versiones LTS
         if let Some(node_version) = available_versions.iter().find(|v| &v.version == version) {
             if node_version.lts.is_lts() {
                 keep = true;
@@ -52,13 +46,11 @@ pub async fn cleanup(yes: bool, config: &Config) -> Result<()> {
         }
     }
 
-    // Si no hay nada que eliminar
     if versions_to_remove.is_empty() {
         println!("{}", t!("no_versions_to_cleanup"));
         return Ok(());
     }
 
-    // Mostrar información
     println!("\n{}", t!("cleanup_title"));
     for version in &versions_to_remove {
         println!("  - {}", version);
@@ -66,8 +58,7 @@ pub async fn cleanup(yes: bool, config: &Config) -> Result<()> {
 
     println!("\n{}", t!("cleanup_keeping"));
     if let Some(ref current) = current_version {
-        println!("  {} ", t!("cleanup_current_version")
-            .replace("{version}", current));
+        println!("  {} ", t!("cleanup_current_version").replace("{version}", current));
     }
     let lts_count = versions_to_keep.iter()
         .filter(|v| {
@@ -78,11 +69,9 @@ pub async fn cleanup(yes: bool, config: &Config) -> Result<()> {
         })
         .count();
     if lts_count > 0 {
-        println!("  {}", t!("cleanup_lts_versions")
-            .replace("{count}", &lts_count.to_string()));
+        println!("  {}", t!("cleanup_lts_versions").replace("{count}", &lts_count.to_string()));
     }
 
-    // Confirmación (si no se usa --yes)
     if !yes {
         print!("\n{}", t!("cleanup_confirm"));
         io::stdout().flush()?;
@@ -97,7 +86,6 @@ pub async fn cleanup(yes: bool, config: &Config) -> Result<()> {
         }
     }
 
-    // Eliminar versiones
     let mut removed_count = 0;
     for version in &versions_to_remove {
         let version_dir = config.versions_dir().join(version);
@@ -107,29 +95,76 @@ pub async fn cleanup(yes: bool, config: &Config) -> Result<()> {
         }
     }
 
-    // Actualizar cache
     refresh_installed_cache(config)?;
 
-    println!("\n{}", t!("cleanup_complete")
-        .replace("{count}", &removed_count.to_string()));
+    println!("\n{}", t!("cleanup_complete").replace("{count}", &removed_count.to_string()));
 
     Ok(())
 }
 
-/// Set default version for new shells (placeholder)
-pub fn set_default(version: String) -> Result<()> {
-    println!("Command 'set-default {}' - Not yet implemented", version);
-    println!("This will be implemented in Phase 7 of the migration plan");
+/// Set default version used by `nvm use` when no version or .nvmrc is found
+pub fn set_default(version: String, config: &Config) -> Result<()> {
+    // Validate: if it's a concrete version, verify it's installed
+    let is_concrete = (version.starts_with('v') || !version.contains('/'))
+        && version.matches('.').count() == 2;
+
+    if is_concrete {
+        let normalized = if version.starts_with('v') {
+            version.clone()
+        } else {
+            format!("v{}", version)
+        };
+        let version_dir = config.versions_dir().join(&normalized);
+        if !version_dir.exists() {
+            eprintln!(
+                "{}",
+                t!("set_default_not_installed")
+                    .replace("{}", &normalized)
+            );
+            eprintln!("Run: nvm install {}", normalized);
+            return Ok(());
+        }
+    }
+
+    let mut nvm_config = NvmConfig::load(&config.config_file());
+    nvm_config.default_version = Some(version.clone());
+    nvm_config.save(&config.config_file())?;
+
+    println!("{}", t!("set_default_success").replace("{}", &version));
     Ok(())
 }
 
-/// Set language/locale
-pub fn set_language(locale: String) -> Result<()> {
+/// Set language/locale and persist it to config
+pub fn set_language(locale: String, config: &Config) -> Result<()> {
     if let Some(new_locale) = Locale::from_str(&locale) {
         set_locale(new_locale);
-        println!("{}", t!("locale_set", new_locale.as_str()));
+
+        let mut nvm_config = NvmConfig::load(&config.config_file());
+        nvm_config.locale = Some(new_locale.as_str().to_string());
+        nvm_config.save(&config.config_file())?;
+
+        println!("{}", t!("locale_persisted").replace("{}", new_locale.as_str()));
     } else {
         println!("{}", t!("unsupported_locale", &locale));
+    }
+    Ok(())
+}
+
+/// Clear the remote and installed version caches
+pub fn cache_clear(config: &Config) -> Result<()> {
+    let mut cleared = 0u32;
+
+    for path in [config.cache_file(), config.installed_cache_file()] {
+        if path.exists() {
+            std::fs::remove_file(&path)?;
+            cleared += 1;
+        }
+    }
+
+    if cleared == 0 {
+        println!("{}", t!("cache_already_clear"));
+    } else {
+        println!("{}", t!("cache_cleared").replace("{}", &cleared.to_string()));
     }
     Ok(())
 }
@@ -138,21 +173,19 @@ pub fn set_language(locale: String) -> Result<()> {
 #[cfg(windows)]
 pub fn enable_symlinks() -> Result<()> {
     use std::process::Command;
+    use crate::utils::{print_warning, print_success};
 
     println!("\n{}", t!("enable_symlinks_title"));
     println!("{}", "=".repeat(50));
     println!();
 
-    // Verificar si se ejecuta como administrador
-    let output = if let Ok(output) = Command::new("net")
+    let is_admin = Command::new("net")
         .args(&["session"])
-        .output() {
-        output.status.success()
-    } else {
-        false
-    };
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false);
 
-    if !output {
+    if !is_admin {
         print_warning(&t!("enable_symlinks_admin_required"));
         println!();
         println!("Para ejecutar como administrador:");
@@ -163,7 +196,6 @@ pub fn enable_symlinks() -> Result<()> {
         return Ok(());
     }
 
-    // Intentar habilitar Developer Mode
     println!("Intentando habilitar soporte de symlinks...");
     println!();
 
@@ -206,10 +238,8 @@ pub fn self_update() -> Result<()> {
     println!("{}", t!("checking_for_updates"));
 
     let current_version = cargo_crate_version!();
-    println!("{}", t!("current_version_label")
-        .replace("{version}", current_version));
+    println!("{}", t!("current_version_label").replace("{version}", current_version));
 
-    // Configurar el actualizador
     let status = self_update::backends::github::Update::configure()
         .repo_owner("FreddyCamposeco")
         .repo_name("nvm-rs")

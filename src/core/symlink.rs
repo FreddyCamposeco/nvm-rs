@@ -56,6 +56,7 @@ pub fn create_or_update_symlink(target: &Path, link: &Path) -> Result<()> {
 }
 
 /// Persiste la versión actual en un archivo .nvm-version para recuperación confiable
+#[allow(dead_code)]
 pub fn persist_current_version(link: &Path, version: &str) -> Result<()> {
     // Crear directorio 'current' si no existe
     if let Some(parent) = link.parent() {

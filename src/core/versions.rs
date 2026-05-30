@@ -234,17 +234,10 @@ pub fn format_version_display(version: &NodeVersion) -> String {
     }
 }
 
-/// Lee la versión actual desde el symlink "current" o desde archivo .nvm-version
-/// Intenta primero leer desde .nvm-version (más confiable en Windows), luego desde symlink
+/// Lee la versión actual desde ~/.nvm/.nvm-version o como fallback del symlink
 pub fn get_current_version(config: &crate::config::Config) -> Option<String> {
-    let current_link = config.current_dir();
-
-    if !current_link.exists() {
-        return None;
-    }
-
-    // Primero, intentar leer desde .nvm-version (persistencia)
-    let version_file = current_link.join(".nvm-version");
+    // Primary: canonical location in nvm_dir
+    let version_file = config.version_file();
     if version_file.exists() {
         if let Ok(content) = std::fs::read_to_string(&version_file) {
             let version = content.trim().to_string();
@@ -254,14 +247,40 @@ pub fn get_current_version(config: &crate::config::Config) -> Option<String> {
         }
     }
 
-    // Fallback: Leer el target del symlink
+    // Legacy fallback: .nvm-version written inside current/bin (old behaviour)
+    let current_link = config.current_dir();
+    if current_link.exists() {
+        let legacy_file = current_link.join(".nvm-version");
+        if legacy_file.exists() {
+            if let Ok(content) = std::fs::read_to_string(&legacy_file) {
+                let version = content.trim().to_string();
+                if !version.is_empty() {
+                    return Some(version);
+                }
+            }
+        }
+    }
+
+    // Final fallback: parse version from symlink target path
+    // Unix: current/bin → versions/vX.Y.Z/bin  → parent = vX.Y.Z
+    // Windows: current/bin → versions/vX.Y.Z    → file_name = vX.Y.Z
     if let Ok(target) = std::fs::read_link(&current_link)
         .or_else(|_| current_link.canonicalize())
     {
-        // Extraer el nombre de la versión del path
-        if let Some(version_name) = target.file_name() {
-            if let Some(version_str) = version_name.to_str() {
-                return Some(version_str.to_string());
+        let version_component = if cfg!(windows) {
+            target.file_name()
+                .and_then(|n| n.to_str())
+                .map(|s| s.to_string())
+        } else {
+            target.parent()
+                .and_then(|p| p.file_name())
+                .and_then(|n| n.to_str())
+                .map(|s| s.to_string())
+        };
+
+        if let Some(v) = version_component {
+            if v.starts_with('v') {
+                return Some(v);
             }
         }
     }
