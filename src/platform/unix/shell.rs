@@ -45,21 +45,33 @@ pub(crate) fn detect_shell_config() -> Result<(PathBuf, ShellType)> {
     Ok((home.join(".bashrc"), ShellType::Bash))
 }
 
+/// Escapes characters that are special inside double-quoted shell strings.
+fn escape_shell_path(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 4);
+    for c in s.chars() {
+        if matches!(c, '"' | '`' | '$' | '\\' | '!') {
+            out.push('\\');
+        }
+        out.push(c);
+    }
+    out
+}
+
 pub(crate) fn build_shell_block(nvm_dir: &Path, shell: ShellType) -> String {
-    let nvm_dir_str = nvm_dir.to_string_lossy();
+    let nvm_dir_escaped = escape_shell_path(&nvm_dir.to_string_lossy());
 
     match shell {
         ShellType::Fish => format!(
             "{start}\nset -gx NVM_HOME \"{nvm_dir}\"\nset -gx NVM_BIN \"$NVM_HOME/bin\"\nset -gx NVM_NODE \"$NVM_HOME/current/bin\"\nfish_add_path $NVM_BIN $NVM_NODE\n{end}\n",
             start = NVM_BLOCK_START,
             end = NVM_BLOCK_END,
-            nvm_dir = nvm_dir_str
+            nvm_dir = nvm_dir_escaped
         ),
         ShellType::Bash | ShellType::Zsh => format!(
             "{start}\nexport NVM_HOME=\"{nvm_dir}\"\nexport NVM_BIN=\"$NVM_HOME/bin\"\nexport NVM_NODE=\"$NVM_HOME/current/bin\"\nexport PATH=\"$NVM_BIN:$NVM_NODE:$PATH\"\n{end}\n",
             start = NVM_BLOCK_START,
             end = NVM_BLOCK_END,
-            nvm_dir = nvm_dir_str
+            nvm_dir = nvm_dir_escaped
         ),
     }
 }

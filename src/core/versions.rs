@@ -58,13 +58,27 @@ impl LtsInfo {
 /// Resuelve un alias o versión a una versión completa
 #[allow(dead_code)] // Will be used in Phase 2-3 (ls-remote, install)
 pub fn resolve_version(version: &str, available_versions: &[NodeVersion]) -> Result<String> {
+    resolve_version_depth(version, available_versions, 0)
+}
+
+fn resolve_version_depth(
+    version: &str,
+    available_versions: &[NodeVersion],
+    depth: u8,
+) -> Result<String> {
+    if depth > 10 {
+        return Err(message(format!(
+            "Alias cycle detected while resolving '{}'",
+            version
+        )));
+    }
+
     // Primero, intentar resolver como alias personalizado
     if let Ok(aliases) = super::aliases::Aliases::load() {
         if let Some(resolved) = aliases.resolve(version) {
             // El alias puede apuntar a otro alias o versión, continuar resolución
             if resolved != version {
-                // Evitar recursión infinita
-                return resolve_version(&resolved, available_versions);
+                return resolve_version_depth(&resolved, available_versions, depth + 1);
             }
         }
     }

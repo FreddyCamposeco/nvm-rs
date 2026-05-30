@@ -119,6 +119,18 @@ fn extract_tar_gz(archive_path: &Path, dest_dir: &Path) -> Result<PathBuf> {
             .map_err(|e| with_context("Failed to get entry path", e))?
             .to_path_buf();
 
+        // Guard against path traversal (tar-slip): reject absolute paths and any `..` component
+        if path.is_absolute()
+            || path
+                .components()
+                .any(|c| matches!(c, std::path::Component::ParentDir))
+        {
+            return Err(message(format!(
+                "Unsafe path in archive entry: {}",
+                path.display()
+            )));
+        }
+
         // Guardar el primer directorio como raíz extraída
         if extracted_root.is_none() {
             if let Some(first_component) = path.components().next() {

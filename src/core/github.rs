@@ -99,6 +99,63 @@ pub fn get_platform_asset_name(version: &str, with_self_update: bool) -> String 
     }
 }
 
+/// Verifies the SHA256 integrity of a downloaded asset against the release's checksums file.
+/// Looks for a `checksums.txt` or `{asset.name}.sha256` companion asset in the release.
+/// Returns `Ok(true)` if verified, `Ok(false)` if no checksum file is present in the release
+/// (caller should warn), or `Err` if the checksum mismatches.
+pub async fn verify_asset_integrity(
+    release: &GithubRelease,
+    asset: &GithubAsset,
+    downloaded_path: &Path,
+) -> Result<bool> {
+    use crate::core::download::calculate_checksum;
+
+    let sha256_name = format!("{}.sha256", asset.name);
+    let checksum_asset = release
+        .assets
+        .iter()
+        .find(|a| a.name == "checksums.txt" || a.name == sha256_name);
+
+    let Some(checksum_asset) = checksum_asset else {
+        return Ok(false);
+    };
+
+    let client = reqwest::Client::new();
+    let content = client
+        .get(&checksum_asset.browser_download_url)
+        .header("User-Agent", "nvm-rs-installer")
+        .send()
+        .await
+        .map_err(|e| with_context("Failed to download checksum file", e))?
+        .text()
+        .await
+        .map_err(|e| with_context("Failed to read checksum file", e))?;
+
+    let expected = content
+        .lines()
+        .find_map(|line| {
+            let mut parts = line.split_whitespace();
+            let hash = parts.next()?;
+            let name = parts.next().unwrap_or("");
+            if name == asset.name || (checksum_asset.name == sha256_name && !hash.is_empty()) {
+                Some(hash.to_string())
+            } else {
+                None
+            }
+        })
+        .ok_or_else(|| message(format!("Checksum not found for {}", asset.name)))?;
+
+    let actual = calculate_checksum(downloaded_path)?;
+    if actual.to_lowercase() != expected.to_lowercase() {
+        return Err(message(format!(
+            "Asset integrity check FAILED for {}\nExpected: {}\nActual:   {}",
+            asset.name, expected, actual
+        )));
+    }
+
+    Ok(true)
+}
+
 /// Descarga un asset desde GitHub
 pub async fn download_asset(asset: &GithubAsset, dest_path: &Path) -> Result<()> {
     use indicatif::{ProgressBar, ProgressStyle};

@@ -4,7 +4,7 @@ use crate::t;
 use std::path::PathBuf;
 use std::io::{self, Write};
 use crate::core::installer::*;
-use crate::core::github::{get_latest_release, get_release_by_tag, get_platform_asset_name, download_asset};
+use crate::core::github::{get_latest_release, get_release_by_tag, get_platform_asset_name, download_asset, verify_asset_integrity};
 
 
 /// Install nvm from GitHub releases
@@ -47,10 +47,20 @@ pub async fn install_self(
     println!("\n{}", t!("downloading"));
     download_asset(asset, &download_path).await?;
 
-    // Verificar checksum (si está disponible)
+    // Verificar integridad contra el manifest de la release
     println!("{}", t!("install_self_verifying"));
-    let checksum = calculate_checksum(&download_path)?;
-    println!("SHA256: {}", checksum);
+    match verify_asset_integrity(&release, asset, &download_path).await {
+        Ok(true) => println!("✓ Integrity verified"),
+        Ok(false) => {
+            let checksum = calculate_checksum(&download_path)?;
+            println!("⚠ No checksum file in release. SHA256: {}", checksum);
+            println!("  Verify manually before continuing.");
+        }
+        Err(e) => {
+            let _ = std::fs::remove_file(&download_path);
+            return Err(e.into());
+        }
+    }
 
     // Determinar directorio de instalación
     let install_dir = if let Some(d) = dir {
@@ -272,10 +282,20 @@ pub async fn update_self(version: Option<String>, with_self_update: bool) -> Res
     println!("\n{}", t!("downloading"));
     download_asset(asset, &download_path).await?;
 
-    // Verificar checksum
+    // Verificar integridad contra el manifest de la release
     println!("{}", t!("install_self_verifying"));
-    let checksum = calculate_checksum(&download_path)?;
-    println!("SHA256: {}", checksum);
+    match verify_asset_integrity(&release, asset, &download_path).await {
+        Ok(true) => println!("✓ Integrity verified"),
+        Ok(false) => {
+            let checksum = calculate_checksum(&download_path)?;
+            println!("⚠ No checksum file in release. SHA256: {}", checksum);
+            println!("  Verify manually before continuing.");
+        }
+        Err(e) => {
+            let _ = std::fs::remove_file(&download_path);
+            return Err(e.into());
+        }
+    }
 
     // Actualizar binario
     println!("\n{}", t!("update_self_installing"));

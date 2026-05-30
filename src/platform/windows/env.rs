@@ -1,6 +1,12 @@
 use crate::error::{message, with_context, Result};
 use std::path::Path;
 
+/// Escapes a value for use inside a PowerShell single-quoted string literal.
+/// Single quotes are escaped by doubling them: O'Brien → O''Brien.
+fn escape_ps_string(s: &str) -> String {
+    s.replace('\'', "''")
+}
+
 /// Agrega el directorio al PATH del usuario (permanente)
 pub fn add_to_path(install_dir: &Path) -> Result<()> {
     use std::ptr;
@@ -45,7 +51,7 @@ pub fn add_to_path(install_dir: &Path) -> Result<()> {
             "-Command",
             &format!(
                 "[Environment]::SetEnvironmentVariable('Path', '{}', 'User')",
-                new_path
+                escape_ps_string(&new_path)
             ),
         ])
         .status()
@@ -109,7 +115,7 @@ pub fn remove_from_path(install_dir: &Path) -> Result<()> {
             "-Command",
             &format!(
                 "[Environment]::SetEnvironmentVariable('Path', '{}', 'User')",
-                new_path
+                escape_ps_string(&new_path)
             ),
         ])
         .status()
@@ -152,7 +158,7 @@ pub fn set_nvm_home(nvm_dir: &Path) -> Result<()> {
             "-Command",
             &format!(
                 "[Environment]::SetEnvironmentVariable('NVM_HOME', '{}', 'User')",
-                nvm_dir_str
+                escape_ps_string(&nvm_dir_str)
             ),
         ])
         .status()
@@ -194,7 +200,7 @@ pub fn set_nvm_bin(nvm_bin: &Path) -> Result<()> {
             "-Command",
             &format!(
                 "[Environment]::SetEnvironmentVariable('NVM_BIN', '{}', 'User')",
-                nvm_bin_str
+                escape_ps_string(&nvm_bin_str)
             ),
         ])
         .status()
@@ -235,7 +241,7 @@ pub fn set_nvm_node(nvm_node: &Path) -> Result<()> {
             "-Command",
             &format!(
                 "[Environment]::SetEnvironmentVariable('NVM_NODE', '{}', 'User')",
-                nvm_node_str
+                escape_ps_string(&nvm_node_str)
             ),
         ])
         .status()
