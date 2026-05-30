@@ -33,7 +33,7 @@ pub fn show_system_node() {
 }
 
 /// Run full doctor diagnostics
-pub fn run_diagnostics(config: &Config, fix: bool) -> Result<()> {
+pub fn run_diagnostics(config: &Config, _fix: bool) -> Result<()> {
     println!("\n{}", t!("doctor_title"));
     println!("{}", "=".repeat(50));
 
@@ -133,7 +133,7 @@ pub fn run_diagnostics(config: &Config, fix: bool) -> Result<()> {
         } else {
             print_warning(&t!("doctor_missing"));
 
-            if fix {
+            if _fix {
                 let mut fixed = true;
                 if let Err(e) = core::installer::set_nvm_dir(&config.nvm_dir) {
                     fixed = false;
