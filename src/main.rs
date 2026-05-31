@@ -200,6 +200,18 @@ enum Commands {
         #[arg(long)]
         json: bool,
     },
+
+    /// Output shell integration script for auto .nvmrc detection on cd
+    ShellInit {
+        /// Shell to generate script for (bash, zsh, fish, powershell)
+        shell: String,
+    },
+
+    /// Reinstall global npm packages from another version into the current version
+    ReinstallPackages {
+        /// Source version to copy packages from
+        version: String,
+    },
 }
 
 #[tokio::main]
@@ -363,6 +375,14 @@ async fn main() -> Result<()> {
             } else {
                 commands::stats::display_stats(&stats);
             }
+        }
+
+        Some(Commands::ShellInit { shell }) => {
+            commands::shell_init::shell_init(&shell)?;
+        }
+
+        Some(Commands::ReinstallPackages { version }) => {
+            commands::reinstall_packages::reinstall_packages(&version, &config).await?;
         }
     }
 

@@ -32,3 +32,4 @@ test_output.txt
 
 # Claude Code local session data
 .claude/
+CLAUDE.md

@@ -30,11 +30,16 @@ pub async fn uninstall(version: &str, force: bool, config: &Config) -> Result<()
             return Ok(());
         }
 
-        // Si es la versión actual y se usa --force, eliminar el symlink
+        // Si es la versión actual y se usa --force, eliminar symlink y version file
         if current_version == resolved_version && force {
             let current_link = config.current_dir();
             if current_link.exists() {
                 symlink::remove_symlink(&current_link)?;
+            }
+            let version_file = config.version_file();
+            if version_file.exists() {
+                std::fs::remove_file(&version_file)
+                    .with_context(|| format!("Failed to remove version file: {}", version_file.display()))?;
             }
         }
     }
