@@ -73,14 +73,28 @@ pub async fn reinstall_packages(from_version: &str, config: &Config) -> Result<(
     for (name, ver) in &packages {
         let pkg_spec = format!("{}@{}", name, ver);
         print!("  {} ... ", pkg_spec);
-        let status = Command::new(&current_npm)
-            .args(["install", "--global", &pkg_spec])
-            .status();
+        use std::io::Write;
+        let _ = std::io::stdout().flush();
 
-        match status {
-            Ok(s) if s.success() => println!("ok"),
-            _ => {
+        let result = Command::new(&current_npm)
+            .args(["install", "--global", &pkg_spec])
+            .output();
+
+        match result {
+            Ok(out) if out.status.success() => println!("ok"),
+            Ok(out) => {
                 println!("failed");
+                let stderr = String::from_utf8_lossy(&out.stderr);
+                let stdout = String::from_utf8_lossy(&out.stdout);
+                if !stderr.trim().is_empty() {
+                    eprintln!("{}", stderr.trim());
+                } else if !stdout.trim().is_empty() {
+                    eprintln!("{}", stdout.trim());
+                }
+                failed.push(pkg_spec);
+            }
+            Err(e) => {
+                println!("failed ({})", e);
                 failed.push(pkg_spec);
             }
         }
