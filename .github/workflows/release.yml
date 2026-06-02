@@ -79,6 +79,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -90,8 +92,19 @@ jobs:
           sha256sum * > checksums.txt
           cat checksums.txt
 
+      - name: Extract release notes from CHANGELOG
+        run: |
+          TAG=${GITHUB_REF_NAME}
+          awk "/^## \[${TAG}\]/{found=1; next} found && /^---/{exit} found{print}" docs/CHANGELOG.md > release_notes.md
+          echo "" >> release_notes.md
+          echo "## Checksums (SHA256)" >> release_notes.md
+          echo '```' >> release_notes.md
+          cat artifacts/checksums.txt >> release_notes.md
+          echo '```' >> release_notes.md
+          cat release_notes.md
+
       - uses: softprops/action-gh-release@v2
         with:
+          body_path: release_notes.md
           files: |
             artifacts/*
-          generate_release_notes: true
