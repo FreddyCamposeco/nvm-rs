@@ -183,7 +183,12 @@ pub async fn download_node_archive(
             println!("Checksum verified ✓");
         }
         Err(e) => {
-            println!("Warning: Could not verify checksum: {}", e);
+            std::fs::remove_file(&dest_path).ok();
+            return Err(with_context(
+                "Cannot verify download integrity — aborting to prevent installing an unverified binary. \
+                Ensure your NODE_MIRROR serves SHASUMS256.txt",
+                e,
+            ));
         }
     }
     

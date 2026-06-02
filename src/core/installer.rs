@@ -137,6 +137,7 @@ pub fn add_to_path(install_dir: &Path) -> Result<()> {
 
 /// Elimina el directorio del PATH del usuario
 #[cfg(windows)]
+#[allow(dead_code)]
 pub fn remove_from_path(install_dir: &Path) -> Result<()> {
     crate::platform::windows::env::remove_from_path(install_dir)
 }

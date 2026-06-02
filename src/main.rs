@@ -12,6 +12,7 @@ mod commands;
 mod platform;
 
 use config::Config;
+use crate::core::nvm_config::NvmConfig;
 use i18n::{set_locale, Locale};
 
 #[derive(Parser)]
@@ -36,6 +37,9 @@ enum Commands {
     Install {
         /// Version to install (e.g., 18.19.0, lts, latest)
         version: String,
+        /// Do not switch to the installed version automatically
+        #[arg(long)]
+        no_use: bool,
     },
 
     /// Uninstall a Node.js version
@@ -84,6 +88,30 @@ enum Commands {
     /// List all aliases
     Aliases,
 
+    /// Show path to the node binary for a version
+    Which {
+        /// Version to locate (default: current)
+        version: Option<String>,
+    },
+
+    /// Run a command using a specific Node.js version
+    Run {
+        /// Node.js version to use
+        version: String,
+        /// Command and arguments to run
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        command: Vec<String>,
+    },
+
+    /// Run a command using a specific Node.js version (alias for run)
+    Exec {
+        /// Node.js version to use
+        version: String,
+        /// Command and arguments to run
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        command: Vec<String>,
+    },
+
     /// Enable symlink support (Windows only - requires admin rights)
     #[cfg(windows)]
     EnableSymlinks,
@@ -108,13 +136,16 @@ enum Commands {
         yes: bool,
     },
 
+    /// Clear the remote and installed version caches
+    CacheClear,
+
     /// Update nvm itself
     #[cfg(feature = "self-update")]
     SelfUpdate,
 
     /// Set default version for new shells
     SetDefault {
-        /// Version to set as default
+        /// Version to set as default (e.g., 18.19.0, lts, latest)
         version: String,
     },
 
@@ -169,19 +200,29 @@ enum Commands {
         #[arg(long)]
         json: bool,
     },
+
+    /// Output shell integration script for auto .nvmrc detection on cd
+    ShellInit {
+        /// Shell to generate script for (bash, zsh, fish, powershell)
+        shell: String,
+    },
+
+    /// Reinstall global npm packages from another version into the current version
+    ReinstallPackages {
+        /// Source version to copy packages from
+        version: String,
+    },
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
     #[cfg(unix)]
     unsafe {
-        // Evitar panic por broken pipe cuando el output se corta (ej. con `head`)
         libc::signal(libc::SIGPIPE, libc::SIG_IGN);
     }
 
     #[cfg(unix)]
     {
-        // Exit cleanly if stdout is closed (e.g., piped to `head`)
         let default_hook = std::panic::take_hook();
         std::panic::set_hook(Box::new(move |info| {
             let msg = info.to_string();
@@ -192,18 +233,27 @@ async fn main() -> Result<()> {
         }));
     }
 
-    // Initialize locale from environment
-    let nvm_lang = env::var("NVM_LANG").unwrap_or_else(|_| "en".to_string());
-    let locale = Locale::from_str(&nvm_lang).unwrap_or(Locale::En);
-    set_locale(locale);
-
-    // Initialize colors
+    // Initialize colors early so locale messages are styled
     utils::init_colors();
 
-    // Parse CLI arguments
-    let cli = Cli::parse();
+    // Determine config path before full Config::new() so we can load locale
+    let nvm_dir = if let Ok(home_var) = env::var("NVM_HOME") {
+        PathBuf::from(home_var)
+    } else {
+        home::home_dir()
+            .map(|h| h.join(".nvm"))
+            .unwrap_or_else(|| PathBuf::from(".nvm"))
+    };
 
-    // Create configuration
+    // Load locale: config file > NVM_LANG env var > default English
+    let nvm_config = NvmConfig::load(&nvm_dir.join("config.json"));
+    let locale_str = nvm_config.locale
+        .or_else(|| env::var("NVM_LANG").ok())
+        .unwrap_or_else(|| "en".to_string());
+    let locale = Locale::from_str(&locale_str).unwrap_or(Locale::En);
+    set_locale(locale);
+
+    let cli = Cli::parse();
     let config = Config::new()?;
 
     if cli.version {
@@ -211,14 +261,14 @@ async fn main() -> Result<()> {
         return Ok(());
     }
 
-    // Execute command
     match cli.command {
         None => {
             Cli::command().print_help()?;
             println!();
         }
-        Some(Commands::Install { version }) => {
-            commands::install::install(&version, &config).await?;
+
+        Some(Commands::Install { version, no_use }) => {
+            commands::install::install(&version, no_use, &config).await?;
         }
 
         Some(Commands::Uninstall { version, force }) => {
@@ -253,13 +303,25 @@ async fn main() -> Result<()> {
             commands::alias::list_aliases()?;
         }
 
+        Some(Commands::Which { version }) => {
+            commands::which::which(version, &config).await?;
+        }
+
+        Some(Commands::Run { version, command }) => {
+            commands::run::run_with_version(&version, &command, &config).await?;
+        }
+
+        Some(Commands::Exec { version, command }) => {
+            commands::run::run_with_version(&version, &command, &config).await?;
+        }
+
         #[cfg(windows)]
-        Commands::EnableSymlinks => {
+        Some(Commands::EnableSymlinks) => {
             commands::misc::enable_symlinks()?;
         }
 
         #[cfg(feature = "self-update")]
-        Commands::SelfUpdate => {
+        Some(Commands::SelfUpdate) => {
             commands::misc::self_update()?;
         }
 
@@ -282,12 +344,16 @@ async fn main() -> Result<()> {
             commands::misc::cleanup(yes, &config).await?;
         }
 
+        Some(Commands::CacheClear) => {
+            commands::misc::cache_clear(&config)?;
+        }
+
         Some(Commands::SetDefault { version }) => {
-            commands::misc::set_default(version)?;
+            commands::misc::set_default(version, &config)?;
         }
 
         Some(Commands::Lang { locale }) => {
-            commands::misc::set_language(locale)?;
+            commands::misc::set_language(locale, &config)?;
         }
 
         Some(Commands::InstallSelf { version, dir, with_self_update }) => {
@@ -309,6 +375,14 @@ async fn main() -> Result<()> {
             } else {
                 commands::stats::display_stats(&stats);
             }
+        }
+
+        Some(Commands::ShellInit { shell }) => {
+            commands::shell_init::shell_init(&shell)?;
+        }
+
+        Some(Commands::ReinstallPackages { version }) => {
+            commands::reinstall_packages::reinstall_packages(&version, &config).await?;
         }
     }
 

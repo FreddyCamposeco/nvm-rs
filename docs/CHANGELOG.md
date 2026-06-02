@@ -2,6 +2,21 @@
 
 Historial de cambios de nvm-rs. Este archivo documenta todas las modificaciones importantes.
 
+## [v0.7.0] - 2026-05-31
+
+### Added
+- `nvm shell-init <shell>`: genera script de integración para auto-detección de `.nvmrc` al hacer `cd` (bash, zsh, fish, powershell)
+- `nvm reinstall-packages <version>`: reinstala paquetes npm globales de una versión a la versión activa
+- `.github/workflows/release.yml`: workflow de release multi-plataforma con checksums SHA256 automáticos
+
+### Fixed
+- `nvm uninstall --force` ahora elimina `.nvm-version` además del symlink al desinstalar la versión activa
+
+### Changed
+- Output de `reinstall-packages`: npm solo habla si hay errores, el output normal es limpio
+
+---
+
 ## [v0.6.1] - 2026-02-11
 
 ### Added

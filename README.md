@@ -1,6 +1,6 @@
 # nvm-rs
 
-🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma (v0.6.1)
+🚀 **Node Version Manager** implementado en Rust - Rápido, seguro y multiplataforma (v0.7.0)
 
 [![Version](https://img.shields.io/github/v/release/FreddyCamposeco/nvm-rs?label=version)](https://github.com/FreddyCamposeco/nvm-rs/releases/latest) [![Rust](https://img.shields.io/badge/rust-1.91%2B-orange.svg)](https://www.rust-lang.org) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)](https://github.com/FreddyCamposeco/nvm-rs/releases) [![Downloads](https://img.shields.io/github/downloads/FreddyCamposeco/nvm-rs/total)](https://github.com/FreddyCamposeco/nvm-rs/releases)
 
@@ -18,7 +18,7 @@
 
 ## 🚀 Estado del Proyecto
 
-**Versión**: 0.6.1
+**Versión**: 0.7.0
 **Estado**: ✅ Producción - Completamente Funcional
 **Plataformas Soportadas**: 
 - 🪟 Windows (x64, ARM64)
@@ -41,6 +41,8 @@
 - 🔄 **Auto-Instalación**: Instala, actualiza y desinstala nvm desde GitHub Releases
 - 🌍 **Multiidioma**: Interfaz completa en Español e Inglés
 - 📄 **`.nvmrc` Support**: Detección automática en árbol de directorios
+- 🐚 **Shell Integration**: Hook automático de `.nvmrc` al cambiar directorios (`shell-init`)
+- 📦 **Migración de Paquetes**: Reinstala paquetes npm globales entre versiones (`reinstall-packages`)
 - 🎯 **PATH Homologado**: Estructura consistente entre Windows, Linux y macOS
 
 ## 📦 Instalación Rápida
@@ -54,7 +56,7 @@
 iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 
 # O con opciones personalizadas
-$env:NVM_VERSION="v0.6.1"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
+$env:NVM_VERSION="v0.7.0"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.ps1 | iex
 ```
 
 **Linux / macOS (Bash)**
@@ -64,7 +66,7 @@ $env:NVM_VERSION="v0.6.1"; $env:NVM_INSTALL_DIR="C:\nvm"; iwr -useb https://raw.
 curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 
 # O con opciones personalizadas
-export NVM_VERSION="v0.6.1"
+export NVM_VERSION="v0.7.0"
 export NVM_INSTALL_DIR="$HOME/.nvm"
 curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts/install/install.sh | bash
 ```
@@ -85,7 +87,7 @@ curl -fsSL https://raw.githubusercontent.com/FreddyCamposeco/nvm-rs/main/scripts
 ```bash
 # Instalar/actualizar usando nvm (si ya lo tienes instalado)
 nvm install-self                 # Instalar última versión
-nvm install-self -v v0.6.1      # Instalar versión específica
+nvm install-self -v v0.7.0      # Instalar versión específica
 nvm update-self                  # Actualizar a la última versión
 nvm uninstall-self              # Desinstalar nvm del sistema
 ```
@@ -151,6 +153,23 @@ nvm install stable
 
 # Eliminar un alias
 nvm unalias my-project
+```
+
+### Integración con Shell
+
+```bash
+# Auto-detectar .nvmrc al hacer cd (añadir al perfil)
+eval "$(nvm shell-init bash)"       # ~/.bashrc
+eval "$(nvm shell-init zsh)"        # ~/.zshrc
+nvm shell-init fish | source        # ~/.config/fish/config.fish
+
+# PowerShell - añadir a $PROFILE
+Invoke-Expression (nvm shell-init powershell)
+```
+
+```bash
+# Reinstalar paquetes globales de una versión anterior
+nvm reinstall-packages v20.19.2    # Copia paquetes globales de v20 a la versión actual
 ```
 
 ### Limpieza y Mantenimiento
@@ -389,7 +408,7 @@ export PATH="$NVM_BIN:$NVM_NODE:$PATH"
 |---------|-------|
 | **Líneas de Código** | ~3,920 |
 | **Módulos** | 17 |
-| **Comandos** | 14 |
+| **Comandos** | 16 |
 | **Idiomas** | 2 (Español, Inglés) |
 | **Plataformas** | 6 (Windows x64/x86, Linux x64/ARM64, macOS x64/ARM64) |
 | **Dependencias** | ~15 principales |
@@ -436,6 +455,8 @@ export PATH="$NVM_BIN:$NVM_NODE:$PATH"
 | Comando | Descripción |
 |---------|-------------|
 | `nvm lang <locale>` | Cambiar idioma (es/en) |
+| `nvm shell-init <shell>` | Generar script de integración para bash/zsh/fish/powershell |
+| `nvm reinstall-packages <ver>` | Reinstalar paquetes npm globales de otra versión en la actual |
 
 ## 🤝 Contribuir
 

@@ -2,9 +2,25 @@
 
 ## Current Version
 
-**v0.6.1** (2026-02-11)
+**v0.7.0** (2026-05-31)
 
 ## Version History
+
+### v0.7.0 - May 31, 2026
+
+#### 🚀 Shell Integration & Package Migration
+
+**Added:**
+- `nvm shell-init <shell>` — auto `.nvmrc` detection on `cd` (bash, zsh, fish, powershell)
+- `nvm reinstall-packages <version>` — migrate global npm packages between versions
+- GitHub Actions release workflow with multi-platform builds and SHA256 checksums
+
+**Fixed:**
+- `nvm uninstall --force` now removes `.nvm-version` alongside the symlink
+
+**Status**: Production Ready
+
+---
 
 ### v0.6.1 - February 11, 2026
 
