@@ -43,24 +43,17 @@ try {
 }
 
 # Determinar nombre del asset con patrón flexible
-# El instalador busca binarios compatibles con el formato: nvm-vX.Y.Z-windows-ARCH[.exe]
 $versionNumber = $releaseVersion -replace '^v', ''
 
-# Crear patrones de búsqueda (en orden de preferencia)
+# Crear patrones de búsqueda (en orden de preferencia: zip y exe)
 $searchPatterns = @(
-    # Exact version with self-update if requested
-    if ($WithSelfUpdate) { "nvm-v$versionNumber-self-update-windows-$arch.exe" }
-
-    # Exact version
+    "nvm-windows-$arch.zip"
+    "nvm-v$versionNumber-windows-$arch.zip"
+    "nvm-$versionNumber-windows-$arch.zip"
+    "*windows-$arch.zip"
     "nvm-v$versionNumber-windows-$arch.exe"
-
-    # Version without 'v' prefix
     "nvm-$versionNumber-windows-$arch.exe"
-
-    # Any nvm for windows with architecture
     "*windows-$arch.exe"
-
-    # Fallback to any nvm.exe
     "nvm.exe"
 )
 
@@ -110,8 +103,10 @@ try {
     exit 1
 }
 
-# Descargar binario directamente a NVM_BIN
+# Descargar asset a directorio temporal
 $downloadUrl = $asset.browser_download_url
+$isZip = $assetName -like "*.zip"
+$tempFile = Join-Path $env:TEMP $assetName
 $exePath = Join-Path $nvmBinDir "nvm.exe"
 
 # Hacer backup si existe
@@ -126,7 +121,6 @@ Write-Info "Descargando $assetName..."
 Write-Info "URL: $downloadUrl"
 
 try {
-    # Usar WebClient para mostrar progreso
     $webClient = New-Object System.Net.WebClient
     $webClient.Headers.Add("User-Agent", "nvm-rs-installer")
 
@@ -135,7 +129,7 @@ try {
         Write-Progress -Activity "Descargando nvm-rs" -Status "$progress% completado" -PercentComplete $progress
     } | Out-Null
 
-    $webClient.DownloadFile($downloadUrl, $exePath)
+    $webClient.DownloadFile($downloadUrl, $tempFile)
     $webClient.Dispose()
     Write-Progress -Activity "Descargando nvm-rs" -Completed
     Write-Success "✓ Descarga completada"
@@ -143,6 +137,30 @@ try {
     Write-Error "Error al descargar el binario: $_"
     exit 1
 }
+
+# Extraer si es zip, o mover directamente si es exe
+if ($isZip) {
+    Write-Info "Extrayendo $assetName..."
+    try {
+        $extractDir = Join-Path $env:TEMP "nvm-rs-extract"
+        if (Test-Path $extractDir) { Remove-Item $extractDir -Recurse -Force }
+        Expand-Archive -Path $tempFile -DestinationPath $extractDir -Force
+        $extractedExe = Get-ChildItem -Path $extractDir -Filter "nvm.exe" -Recurse | Select-Object -First 1
+        if (-not $extractedExe) {
+            Write-Error "No se encontró nvm.exe dentro del zip"
+            exit 1
+        }
+        Move-Item -Path $extractedExe.FullName -Destination $exePath -Force
+        Remove-Item $extractDir -Recurse -Force
+        Write-Success "✓ Extraído correctamente"
+    } catch {
+        Write-Error "Error al extraer el zip: $_"
+        exit 1
+    }
+} else {
+    Move-Item -Path $tempFile -Destination $exePath -Force
+}
+Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
 
 # Verificar checksum
 Write-Info ""
